@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis - Digital Universe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <canvas id="universe-canvas"></canvas>
+        
+        <div id="detail-panel" class="detail-panel hidden">
+            <div class="detail-panel-header">
+                <h2 id="planet-name">Planet Name</h2>
+                <button id="close-panel" class="close-btn" aria-label="Close panel">×</button>
+            </div>
+            
+            <div class="detail-panel-content">
+                <div class="planet-description" id="planet-description">
+                    Loading planet data...
+                </div>
+                
+                <div class="planet-stats">
+                    <h3>Planetary Statistics</h3>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Diameter</span>
+                            <span class="stat-value" id="stat-diameter">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Distance from Star</span>
+                            <span class="stat-value" id="stat-distance">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Orbital Period</span>
+                            <span class="stat-value" id="stat-period">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Surface Temperature</span>
+                            <span class="stat-value" id="stat-temperature">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Atmosphere</span>
+                            <span class="stat-value" id="stat-atmosphere">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Terrain Type</span>
+                            <span class="stat-value" id="stat-terrain">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-panel-footer">
+                <button id="dismiss-panel" class="dismiss-btn">Dismiss</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h1>Genesis</h1>
+            <p class="subtitle">Click a planet to explore</p>
+        </div>
+    </div>
+    
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>
