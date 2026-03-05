@@ -25,6 +25,7 @@ Visit [bloomit.ai](https://bloomit.ai) and talk to the agent. Tell it what the u
 When you click a planet, a detail panel slides in showing:
 - **Planet Name**: Procedurally generated unique names
 - **Description**: Dynamic text describing the planet's environment and characteristics
+- **Planet Search**: Quick search box to filter and jump to other planets by name
 - **Key Statistics**:
   - Diameter (in km and Earth ratios)
   - Distance from star (in AU and km)
@@ -71,7 +72,8 @@ npm test
 1. **Explore the Solar System**: The canvas displays a procedurally generated solar system with a star and multiple planets
 2. **Hover Over Planets**: Move your mouse over planets to see their names and get visual feedback
 3. **Click to Learn More**: Click any planet to open the detail panel with comprehensive information
-4. **Close the Panel**: Click the × button, the Dismiss button, or press ESC to close the detail panel
+4. **Search for Planets**: Use the search box at the top of the detail panel to quickly find planets by name (case-insensitive)
+5. **Close the Panel**: Click the × button, the Dismiss button, or press ESC to close the detail panel
 
 ## Technical Architecture
 

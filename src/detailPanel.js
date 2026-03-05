@@ -4,15 +4,23 @@
  */
 
 export class DetailPanel {
-    constructor(panelId = 'detail-panel') {
+    constructor(solarSystem = null, panelId = 'detail-panel') {
         this.panel = document.getElementById(panelId);
         this.closeBtn = document.getElementById('close-panel');
         this.dismissBtn = document.getElementById('dismiss-panel');
+        this.searchInput = document.getElementById('planet-search-input');
+        this.searchResults = document.getElementById('search-results');
         this.currentPlanet = null;
+        this.solarSystem = solarSystem;
         
         // Bind close handlers
         this.closeBtn.addEventListener('click', () => this.hide());
         this.dismissBtn.addEventListener('click', () => this.hide());
+        
+        // Bind search handler
+        if (this.searchInput) {
+            this.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+        }
         
         // Close on escape key
         document.addEventListener('keydown', (e) => {
@@ -20,6 +28,13 @@ export class DetailPanel {
                 this.hide();
             }
         });
+    }
+    
+    /**
+     * Set the solar system reference
+     */
+    setSolarSystem(solarSystem) {
+        this.solarSystem = solarSystem;
     }
     
     /**
@@ -37,6 +52,81 @@ export class DetailPanel {
     hide() {
         this.panel.classList.add('hidden');
         this.currentPlanet = null;
+        this.clearSearch();
+    }
+    
+    /**
+     * Clear search input and results
+     */
+    clearSearch() {
+        if (this.searchInput) {
+            this.searchInput.value = '';
+        }
+        if (this.searchResults) {
+            this.searchResults.innerHTML = '';
+            this.searchResults.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Handle search input
+     */
+    handleSearch(query) {
+        if (!this.solarSystem || !query.trim()) {
+            this.searchResults.innerHTML = '';
+            this.searchResults.classList.add('hidden');
+            return;
+        }
+        
+        const results = this.searchPlanets(query);
+        this.displaySearchResults(results);
+    }
+    
+    /**
+     * Search planets by name (case-insensitive substring match)
+     */
+    searchPlanets(query) {
+        if (!this.solarSystem || !this.solarSystem.planets) {
+            return [];
+        }
+        
+        const lowerQuery = query.toLowerCase().trim();
+        return this.solarSystem.planets.filter(planet => 
+            planet.name.toLowerCase().includes(lowerQuery)
+        );
+    }
+    
+    /**
+     * Display search results
+     */
+    displaySearchResults(results) {
+        if (results.length === 0) {
+            this.searchResults.innerHTML = '<div class="search-result-item" style="cursor: default; color: #8895a7;">No planets found</div>';
+            this.searchResults.classList.remove('hidden');
+            return;
+        }
+        
+        this.searchResults.innerHTML = '';
+        this.searchResults.classList.remove('hidden');
+        
+        results.forEach(planet => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.textContent = planet.name;
+            
+            // Highlight if it's the current planet
+            if (this.currentPlanet && planet.name === this.currentPlanet.name) {
+                item.classList.add('active');
+            }
+            
+            // Handle click
+            item.addEventListener('click', () => {
+                this.show(planet);
+                this.clearSearch();
+            });
+            
+            this.searchResults.appendChild(item);
+        });
     }
     
     /**

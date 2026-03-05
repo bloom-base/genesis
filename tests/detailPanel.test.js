@@ -14,6 +14,10 @@ describe('DetailPanel', () => {
                     <h2 id="planet-name">Planet Name</h2>
                     <button id="close-panel" class="close-btn">×</button>
                 </div>
+                <div class="planet-search">
+                    <input type="text" id="planet-search-input" class="planet-search-input" />
+                    <div id="search-results" class="search-results hidden"></div>
+                </div>
                 <div class="detail-panel-content">
                     <div id="planet-description"></div>
                     <div class="planet-stats">
@@ -218,6 +222,132 @@ describe('DetailPanel', () => {
             detailPanel.show(mockPlanet);
             
             expect(detailPanel.getCurrentPlanet()).toBe(mockPlanet);
+        });
+    });
+    
+    describe('planet search', () => {
+        let mockSolarSystem;
+        
+        beforeEach(() => {
+            // Create mock solar system with multiple planets
+            const random = createSeededRandom(123);
+            mockSolarSystem = {
+                star: { name: 'Test Star' },
+                planets: [
+                    generatePlanet(random, 0, 123),
+                    generatePlanet(random, 1, 123),
+                    generatePlanet(random, 2, 123),
+                    generatePlanet(random, 3, 123)
+                ]
+            };
+            
+            // Override planet names for easier testing
+            mockSolarSystem.planets[0].name = 'Mercury Alpha';
+            mockSolarSystem.planets[1].name = 'Venus Beta';
+            mockSolarSystem.planets[2].name = 'Earth Prime';
+            mockSolarSystem.planets[3].name = 'Mars Colony';
+            
+            detailPanel.setSolarSystem(mockSolarSystem);
+        });
+        
+        it('should have search input and results elements', () => {
+            expect(detailPanel.searchInput).toBeDefined();
+            expect(detailPanel.searchResults).toBeDefined();
+        });
+        
+        it('should filter planets by name (case-insensitive)', () => {
+            const results = detailPanel.searchPlanets('earth');
+            
+            expect(results.length).toBe(1);
+            expect(results[0].name).toBe('Earth Prime');
+        });
+        
+        it('should match partial planet names', () => {
+            const results = detailPanel.searchPlanets('a');
+            
+            expect(results.length).toBeGreaterThan(0);
+            expect(results.some(p => p.name.toLowerCase().includes('a'))).toBe(true);
+        });
+        
+        it('should return empty array for no matches', () => {
+            const results = detailPanel.searchPlanets('xyz123');
+            
+            expect(results.length).toBe(0);
+        });
+        
+        it('should return empty array when solar system is null', () => {
+            detailPanel.setSolarSystem(null);
+            const results = detailPanel.searchPlanets('earth');
+            
+            expect(results.length).toBe(0);
+        });
+        
+        it('should display search results in DOM', () => {
+            detailPanel.handleSearch('mars');
+            
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(false);
+            expect(detailPanel.searchResults.children.length).toBeGreaterThan(0);
+        });
+        
+        it('should show "no results" message when nothing matches', () => {
+            detailPanel.handleSearch('xyz123');
+            
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(false);
+            expect(detailPanel.searchResults.textContent).toContain('No planets found');
+        });
+        
+        it('should hide results when search is empty', () => {
+            detailPanel.handleSearch('mars');
+            detailPanel.handleSearch('');
+            
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(true);
+        });
+        
+        it('should highlight current planet in results', () => {
+            detailPanel.show(mockSolarSystem.planets[2]); // Earth Prime
+            detailPanel.handleSearch('e');
+            
+            const items = detailPanel.searchResults.querySelectorAll('.search-result-item');
+            const activeItem = Array.from(items).find(item => item.classList.contains('active'));
+            
+            expect(activeItem).toBeDefined();
+            expect(activeItem.textContent).toBe('Earth Prime');
+        });
+        
+        it('should update detail panel when search result is clicked', () => {
+            detailPanel.handleSearch('venus');
+            
+            const firstResult = detailPanel.searchResults.querySelector('.search-result-item');
+            firstResult.click();
+            
+            expect(detailPanel.getCurrentPlanet()).toBe(mockSolarSystem.planets[1]);
+        });
+        
+        it('should clear search when result is clicked', () => {
+            detailPanel.handleSearch('venus');
+            
+            const firstResult = detailPanel.searchResults.querySelector('.search-result-item');
+            firstResult.click();
+            
+            expect(detailPanel.searchInput.value).toBe('');
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(true);
+        });
+        
+        it('should clear search when panel is hidden', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.handleSearch('mars');
+            detailPanel.hide();
+            
+            expect(detailPanel.searchInput.value).toBe('');
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(true);
+        });
+        
+        it('should handle search input events', () => {
+            const searchInput = detailPanel.searchInput;
+            searchInput.value = 'mercury';
+            searchInput.dispatchEvent(new Event('input'));
+            
+            expect(detailPanel.searchResults.classList.contains('hidden')).toBe(false);
         });
     });
 });

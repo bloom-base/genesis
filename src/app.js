@@ -10,11 +10,13 @@ import { DetailPanel } from './detailPanel.js';
 class App {
     constructor() {
         this.canvas = document.getElementById('universe-canvas');
-        this.detailPanel = new DetailPanel();
         
         // Generate solar system with a random seed
         const seed = Math.floor(Math.random() * 1000000);
         this.solarSystem = generateSolarSystem(seed);
+        
+        // Initialize detail panel with solar system
+        this.detailPanel = new DetailPanel(this.solarSystem);
         
         // Initialize renderer
         this.renderer = new SolarSystemRenderer(this.canvas, this.solarSystem);
