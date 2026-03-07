@@ -200,4 +200,96 @@ describe('SolarSystemRenderer', () => {
             expect(renderer.centerY).toBe(540);
         });
     });
+    
+    describe('drawOrbits', () => {
+        let ctx;
+        
+        beforeEach(() => {
+            ctx = renderer.ctx;
+            // Spy on canvas context methods
+            vi.spyOn(ctx, 'beginPath');
+            vi.spyOn(ctx, 'arc');
+            vi.spyOn(ctx, 'stroke');
+            vi.spyOn(ctx, 'createRadialGradient');
+        });
+        
+        it('should draw orbit for each planet', () => {
+            renderer.drawOrbits();
+            
+            // Should call arc once per planet
+            expect(ctx.arc).toHaveBeenCalledTimes(solarSystem.planets.length);
+        });
+        
+        it('should use radial gradient for fade effect', () => {
+            renderer.drawOrbits();
+            
+            // Should create gradient for each planet
+            expect(ctx.createRadialGradient).toHaveBeenCalledTimes(solarSystem.planets.length);
+        });
+        
+        it('should scale line thickness with zoom level', () => {
+            // Test at default scale (60)
+            renderer.scale = 60;
+            renderer.drawOrbits();
+            const defaultLineWidth = ctx.lineWidth;
+            
+            // Test at higher zoom (more zoomed in)
+            renderer.scale = 120;
+            renderer.drawOrbits();
+            const zoomedInLineWidth = ctx.lineWidth;
+            
+            // Line should be thicker when zoomed in
+            expect(zoomedInLineWidth).toBeGreaterThan(defaultLineWidth);
+            
+            // Test at lower zoom (more zoomed out)
+            renderer.scale = 30;
+            renderer.drawOrbits();
+            const zoomedOutLineWidth = ctx.lineWidth;
+            
+            // Line should be thinner when zoomed out
+            expect(zoomedOutLineWidth).toBeLessThan(defaultLineWidth);
+        });
+        
+        it('should clamp line width to reasonable bounds', () => {
+            // Test extreme zoom out
+            renderer.scale = 1;
+            renderer.drawOrbits();
+            expect(ctx.lineWidth).toBeGreaterThanOrEqual(0.5);
+            
+            // Test extreme zoom in
+            renderer.scale = 500;
+            renderer.drawOrbits();
+            expect(ctx.lineWidth).toBeLessThanOrEqual(2.5);
+        });
+        
+        it('should draw orbits at correct radius for each planet', () => {
+            renderer.drawOrbits();
+            
+            // Check that each planet's orbit was drawn with correct radius
+            solarSystem.planets.forEach((planet, index) => {
+                const expectedRadius = planet.distance * renderer.scale;
+                const callArgs = ctx.arc.mock.calls[index];
+                
+                // arc(x, y, radius, startAngle, endAngle)
+                expect(callArgs[2]).toBeCloseTo(expectedRadius, 1);
+            });
+        });
+        
+        it('should draw orbits as complete circles', () => {
+            renderer.drawOrbits();
+            
+            // Each orbit should be a full circle (0 to 2π)
+            solarSystem.planets.forEach((planet, index) => {
+                const callArgs = ctx.arc.mock.calls[index];
+                
+                // arc(x, y, radius, startAngle, endAngle)
+                expect(callArgs[3]).toBe(0); // startAngle
+                expect(callArgs[4]).toBe(Math.PI * 2); // endAngle
+            });
+        });
+        
+        it('should not throw errors when rendering orbits', () => {
+            expect(() => renderer.drawOrbits()).not.toThrow();
+        });
+    });
 });

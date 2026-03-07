@@ -20,6 +20,7 @@ Visit [bloomit.ai](https://bloomit.ai) and talk to the agent. Tell it what the u
 - **Planet Properties**: Size, distance, orbital period, temperature, atmosphere, and terrain type
 - **Planet Types**: Terrestrial, gas giants, and ice worlds with appropriate characteristics
 - **Visual Design**: Beautiful canvas-based rendering with animated orbits and glowing effects
+- **Orbit Trail Visualization**: Semi-transparent orbital paths with fading edges create an ethereal effect, with thickness scaling based on zoom level for optimal readability
 
 ### Planet Detail Panel
 When you click a planet, a detail panel slides in showing:
