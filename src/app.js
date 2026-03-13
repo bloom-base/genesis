@@ -38,15 +38,44 @@ class App {
         
         // Handle click for planet selection
         this.canvas.addEventListener('click', (e) => {
+            // Block clicks during animation
+            if (this.renderer.isInteractionBlocked()) {
+                return;
+            }
+            
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
             const clickedPlanet = this.renderer.checkPlanetClick(x, y);
             if (clickedPlanet) {
-                this.detailPanel.show(clickedPlanet);
+                this.handlePlanetClick(clickedPlanet);
             }
         });
+        
+        // Handle detail panel close
+        this.detailPanel.onClose(() => {
+            this.handleDetailPanelClose();
+        });
+    }
+    
+    /**
+     * Handle planet click with zoom animation
+     */
+    handlePlanetClick(planet) {
+        // Zoom camera to planet
+        this.renderer.zoomToPlanet(planet, () => {
+            // Show detail panel after zoom completes
+            this.detailPanel.show(planet);
+        });
+    }
+    
+    /**
+     * Handle detail panel close with zoom out animation
+     */
+    handleDetailPanelClose() {
+        // Zoom back to system view
+        this.renderer.zoomToSystemView();
     }
     
     animate(currentTime = 0) {
