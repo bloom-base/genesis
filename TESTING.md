@@ -2,14 +2,27 @@
 
 ## Test Status
 
-✅ **Manual tests passing** - All core functionality verified  
-⚠️ **Automated tests ready** - vitest tests written but npm install currently failing
+✅ **Manual tests passing** - All core functionality verified (13/13 tests)  
+✅ **Vitest tests ready** - Comprehensive test suite written and syntax-validated  
+⚠️ **npm infrastructure issue** - Temporary DNS resolution preventing npm install
 
 ## Running Tests
 
-### Option 1: Manual Test Runner (Recommended - Works Now)
+### Option 1: Vitest Test Suite (Recommended - Run when npm works)
 
-The manual test runner works without any npm dependencies:
+```bash
+npm install  # Install dependencies
+npm test     # Run full test suite
+```
+
+This runs:
+- `tests/cameraAnimation.test.js` - 20+ unit tests for camera animation
+- `tests/renderer.test.js` - Integration tests with renderer
+- All other existing tests
+
+### Option 2: Manual Test Runner (Works now without dependencies)
+
+The manual test runner validates core functionality without any npm dependencies:
 
 ```bash
 node run_tests_manual.js
@@ -145,8 +158,7 @@ Once npm infrastructure is fixed, the vitest tests are ready to run via `npm tes
 
 - `tests/cameraAnimation.test.js` - Vitest unit tests (20+ tests)
 - `tests/renderer.test.js` - Vitest integration tests (updated with camera tests)
-- `run_tests_manual.js` - Standalone test runner (no dependencies)
-- `run_integration_tests.js` - Integration test runner (requires jsdom)
+- `run_tests_manual.js` - Standalone test runner for verification (no dependencies)
 
 ## Verifying Syntax
 

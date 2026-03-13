@@ -1,10 +1,9 @@
+import { CameraAnimator } from './cameraAnimation.js';
+
 /**
  * Canvas renderer for the solar system
  * Handles drawing planets, orbits, and click detection
  */
-
-import { CameraAnimator } from './cameraAnimation.js';
-
 export class SolarSystemRenderer {
     constructor(canvas, solarSystem) {
         this.canvas = canvas;

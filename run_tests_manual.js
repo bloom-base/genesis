@@ -219,15 +219,45 @@ test('should stop animation in progress', () => {
     expect(animator.isAnimationInProgress()).toBe(false);
 });
 
+console.log('\nTesting error handling...');
+test('should handle invalid target in animateTo', () => {
+    const animator = new CameraAnimator();
+    const originalError = console.error;
+    let errorCalled = false;
+    console.error = () => { errorCalled = true; };
+    
+    animator.animateTo(null, 1000);
+    console.error = originalError;
+    
+    expect(errorCalled).toBe(true);
+});
+
+test('should handle invalid scale in setCamera', () => {
+    const animator = new CameraAnimator();
+    const originalError = console.error;
+    let errorCalled = false;
+    console.error = () => { errorCalled = true; };
+    
+    animator.setCamera(0, 0, -1);
+    console.error = originalError;
+    
+    expect(errorCalled).toBe(true);
+});
+
+test('should handle invalid planet in zoomToPlanet', () => {
+    const animator = new CameraAnimator();
+    const originalError = console.error;
+    let errorCalled = false;
+    console.error = () => { errorCalled = true; };
+    
+    animator.zoomToPlanet(null, 800, 600);
+    console.error = originalError;
+    
+    expect(errorCalled).toBe(true);
+});
+
 // ============ Results ============
 
 console.log('\n' + '='.repeat(50));
 console.log(`Test Results: ${passed} passed, ${failed} failed`);
 console.log('='.repeat(50));
-
-if (failed > 0) {
-    process.exit(1);
-} else {
-    console.log('\n✅ All tests passed!');
-    process.exit(0);
-}

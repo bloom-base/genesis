@@ -67,6 +67,29 @@ export class CameraAnimator {
    * @param {Function} onComplete - Callback called when animation completes
    */
   animateTo(target, duration = 800, onUpdate = null, onComplete = null) {
+    // Validate inputs
+    if (!target || typeof target !== 'object') {
+      console.error('CameraAnimator.animateTo: target must be an object');
+      return;
+    }
+    
+    if (typeof target.x !== 'number' || !isFinite(target.x) ||
+        typeof target.y !== 'number' || !isFinite(target.y) ||
+        typeof target.scale !== 'number' || !isFinite(target.scale)) {
+      console.error('CameraAnimator.animateTo: target.x, target.y, and target.scale must be finite numbers');
+      return;
+    }
+    
+    if (target.scale <= 0) {
+      console.error('CameraAnimator.animateTo: target.scale must be positive');
+      return;
+    }
+    
+    if (duration <= 0) {
+      console.error('CameraAnimator.animateTo: duration must be positive');
+      return;
+    }
+
     // Cancel any existing animation
     this.cancelAnimation();
 
@@ -81,30 +104,45 @@ export class CameraAnimator {
     this.onAnimationComplete = onComplete;
 
     const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeInOutCubic(progress);
+      try {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeInOutCubic(progress);
 
-      // Interpolate camera values
-      this.camera.x = start.x + (target.x - start.x) * easedProgress;
-      this.camera.y = start.y + (target.y - start.y) * easedProgress;
-      this.camera.scale = start.scale + (target.scale - start.scale) * easedProgress;
+        // Interpolate camera values
+        this.camera.x = start.x + (target.x - start.x) * easedProgress;
+        this.camera.y = start.y + (target.y - start.y) * easedProgress;
+        this.camera.scale = start.scale + (target.scale - start.scale) * easedProgress;
 
-      // Call update callback
-      if (onUpdate) {
-        onUpdate(this.getCamera());
-      }
+        // Call update callback
+        if (onUpdate) {
+          try {
+            onUpdate(this.getCamera());
+          } catch (error) {
+            console.error('CameraAnimator: Error in onUpdate callback:', error);
+          }
+        }
 
-      // Continue or complete animation
-      if (progress < 1) {
-        this.animationId = requestAnimationFrame(animate);
-      } else {
+        // Continue or complete animation
+        if (progress < 1) {
+          this.animationId = requestAnimationFrame(animate);
+        } else {
+          this.isAnimating = false;
+          this.animationId = null;
+          if (this.onAnimationComplete) {
+            try {
+              this.onAnimationComplete();
+            } catch (error) {
+              console.error('CameraAnimator: Error in onComplete callback:', error);
+            }
+            this.onAnimationComplete = null;
+          }
+        }
+      } catch (error) {
+        console.error('CameraAnimator: Error during animation:', error);
         this.isAnimating = false;
         this.animationId = null;
-        if (this.onAnimationComplete) {
-          this.onAnimationComplete();
-          this.onAnimationComplete = null;
-        }
+        this.onAnimationComplete = null;
       }
     };
 
@@ -121,6 +159,26 @@ export class CameraAnimator {
    * @param {Function} onComplete - Callback called when animation completes
    */
   zoomToPlanet(planet, canvasWidth, canvasHeight, duration = 800, onUpdate = null, onComplete = null) {
+    // Validate planet object
+    if (!planet || typeof planet !== 'object') {
+      console.error('CameraAnimator.zoomToPlanet: planet must be an object');
+      return;
+    }
+    
+    if (typeof planet.x !== 'number' || !isFinite(planet.x) ||
+        typeof planet.y !== 'number' || !isFinite(planet.y) ||
+        typeof planet.radius !== 'number' || !isFinite(planet.radius) || planet.radius <= 0) {
+      console.error('CameraAnimator.zoomToPlanet: planet must have valid x, y, and radius properties');
+      return;
+    }
+    
+    // Validate canvas dimensions
+    if (typeof canvasWidth !== 'number' || !isFinite(canvasWidth) || canvasWidth <= 0 ||
+        typeof canvasHeight !== 'number' || !isFinite(canvasHeight) || canvasHeight <= 0) {
+      console.error('CameraAnimator.zoomToPlanet: canvasWidth and canvasHeight must be positive numbers');
+      return;
+    }
+
     // Calculate target scale to show planet nicely (zoom to ~3x the planet's size)
     const targetScale = Math.min(
       canvasWidth / (planet.radius * 8),
@@ -149,6 +207,17 @@ export class CameraAnimator {
    * @param {Function} onComplete - Callback called when animation completes
    */
   zoomToSystemView(canvasWidth, canvasHeight, duration = 800, onUpdate = null, onComplete = null) {
+    // Validate canvas dimensions (optional parameters, but validate if provided)
+    if (canvasWidth !== undefined && (typeof canvasWidth !== 'number' || !isFinite(canvasWidth) || canvasWidth <= 0)) {
+      console.error('CameraAnimator.zoomToSystemView: canvasWidth must be a positive number if provided');
+      return;
+    }
+    
+    if (canvasHeight !== undefined && (typeof canvasHeight !== 'number' || !isFinite(canvasHeight) || canvasHeight <= 0)) {
+      console.error('CameraAnimator.zoomToSystemView: canvasHeight must be a positive number if provided');
+      return;
+    }
+
     // Reset to default view (centered, scale 1)
     this.animateTo(
       { x: 0, y: 0, scale: 1 },
@@ -165,6 +234,22 @@ export class CameraAnimator {
    * @param {number} scale - Scale
    */
   setCamera(x, y, scale) {
+    // Validate inputs
+    if (typeof x !== 'number' || !isFinite(x)) {
+      console.error('CameraAnimator.setCamera: x must be a finite number');
+      return;
+    }
+    
+    if (typeof y !== 'number' || !isFinite(y)) {
+      console.error('CameraAnimator.setCamera: y must be a finite number');
+      return;
+    }
+    
+    if (typeof scale !== 'number' || !isFinite(scale) || scale <= 0) {
+      console.error('CameraAnimator.setCamera: scale must be a positive finite number');
+      return;
+    }
+
     this.cancelAnimation();
     this.camera.x = x;
     this.camera.y = y;
