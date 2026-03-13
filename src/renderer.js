@@ -1,18 +1,20 @@
+import { CameraAnimator } from './cameraAnimation.js';
+
 /**
  * Canvas renderer for the solar system
  * Handles drawing planets, orbits, and click detection
  */
-
 export class SolarSystemRenderer {
     constructor(canvas, solarSystem) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.solarSystem = solarSystem;
-        this.scale = 60; // Pixels per AU
+        this.scale = 60; // Pixels per AU (base scale)
         this.centerX = 0;
         this.centerY = 0;
         this.hoveredPlanet = null;
         this.animationTime = 0;
+        this.cameraAnimator = new CameraAnimator();
         
         this.resize();
         window.addEventListener('resize', () => this.resize());
@@ -24,14 +26,64 @@ export class SolarSystemRenderer {
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
     }
+
+    /**
+     * Check if interactions should be blocked (during camera animation)
+     */
+    isInteractionBlocked() {
+        return this.cameraAnimator.isAnimationInProgress();
+    }
+
+    /**
+     * Get the camera animator instance
+     */
+    getCameraAnimator() {
+        return this.cameraAnimator;
+    }
+
+    /**
+     * Zoom camera to focus on a planet
+     */
+    zoomToPlanet(planet, onComplete) {
+        // Calculate planet's world position
+        const planetWorldPos = {
+            x: planet.x,
+            y: planet.y,
+            radius: planet.radius * this.scale
+        };
+        
+        this.cameraAnimator.zoomToPlanet(
+            planetWorldPos,
+            this.canvas.width,
+            this.canvas.height,
+            800, // duration
+            () => this.render(0), // re-render each frame
+            onComplete
+        );
+    }
+
+    /**
+     * Zoom camera back to system view
+     */
+    zoomToSystemView(onComplete) {
+        this.cameraAnimator.zoomToSystemView(
+            this.canvas.width,
+            this.canvas.height,
+            800, // duration
+            () => this.render(0), // re-render each frame
+            onComplete
+        );
+    }
     
     /**
      * Convert solar system coordinates (AU) to canvas coordinates (pixels)
      */
     toCanvasCoords(x, y) {
+        const camera = this.cameraAnimator.getCamera();
+        const effectiveScale = this.scale * camera.scale;
         return {
-            x: this.centerX + x * this.scale,
-            y: this.centerY + y * this.scale
+            x: this.centerX + camera.x + x * effectiveScale,
+            y: this.centerY + camera.y + y * effectiveScale
         };
     }
     
@@ -39,9 +91,11 @@ export class SolarSystemRenderer {
      * Convert canvas coordinates to solar system coordinates
      */
     fromCanvasCoords(canvasX, canvasY) {
+        const camera = this.cameraAnimator.getCamera();
+        const effectiveScale = this.scale * camera.scale;
         return {
-            x: (canvasX - this.centerX) / this.scale,
-            y: (canvasY - this.centerY) / this.scale
+            x: (canvasX - this.centerX - camera.x) / effectiveScale,
+            y: (canvasY - this.centerY - camera.y) / effectiveScale
         };
     }
     
@@ -85,12 +139,13 @@ export class SolarSystemRenderer {
      * Draw orbital paths
      */
     drawOrbits() {
+        const camera = this.cameraAnimator.getCamera();
         this.ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
         this.ctx.lineWidth = 1;
         
         this.solarSystem.planets.forEach(planet => {
             const center = this.toCanvasCoords(0, 0);
-            const radius = planet.distance * this.scale;
+            const radius = planet.distance * this.scale * camera.scale;
             
             this.ctx.beginPath();
             this.ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
@@ -205,6 +260,11 @@ export class SolarSystemRenderer {
      * Update hover state based on mouse position
      */
     updateHover(canvasX, canvasY) {
+        // Block hover updates during animation
+        if (this.isInteractionBlocked()) {
+            return;
+        }
+        
         this.hoveredPlanet = this.checkPlanetClick(canvasX, canvasY);
         this.canvas.style.cursor = this.hoveredPlanet ? 'pointer' : 'default';
     }

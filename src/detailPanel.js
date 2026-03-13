@@ -9,6 +9,7 @@ export class DetailPanel {
         this.closeBtn = document.getElementById('close-panel');
         this.dismissBtn = document.getElementById('dismiss-panel');
         this.currentPlanet = null;
+        this.closeCallback = null;
         
         // Bind close handlers
         this.closeBtn.addEventListener('click', () => this.hide());
@@ -23,20 +24,37 @@ export class DetailPanel {
     }
     
     /**
+     * Register a callback to be called when panel is closed
+     */
+    onClose(callback) {
+        this.closeCallback = callback;
+    }
+    
+    /**
      * Show the panel with planet information
      */
     show(planet) {
         this.currentPlanet = planet;
         this.updateContent(planet);
         this.panel.classList.remove('hidden');
+        // Trigger fade-in animation by adding class after a small delay
+        requestAnimationFrame(() => {
+            this.panel.classList.add('fade-in');
+        });
     }
     
     /**
      * Hide the panel
      */
     hide() {
+        this.panel.classList.remove('fade-in');
         this.panel.classList.add('hidden');
         this.currentPlanet = null;
+        
+        // Call close callback if registered
+        if (this.closeCallback) {
+            this.closeCallback();
+        }
     }
     
     /**

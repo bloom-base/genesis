@@ -61,6 +61,20 @@ body {
     overflow-y: auto;
     transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 100;
+    opacity: 0;
+}
+
+.detail-panel.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .detail-panel.hidden {
