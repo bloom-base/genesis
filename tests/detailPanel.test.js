@@ -220,4 +220,141 @@ describe('DetailPanel', () => {
             expect(detailPanel.getCurrentPlanet()).toBe(mockPlanet);
         });
     });
+    
+    describe('comparison mode', () => {
+        let secondPlanet;
+        
+        beforeEach(() => {
+            const random = createSeededRandom(123);
+            secondPlanet = generatePlanet(random, 3, 123);
+        });
+        
+        it('should start with comparison mode disabled', () => {
+            expect(detailPanel.comparisonMode).toBe(false);
+            expect(detailPanel.comparisonPlanet).toBeNull();
+        });
+        
+        it('should enter comparison mode when compare button is clicked', () => {
+            detailPanel.show(mockPlanet);
+            
+            const compareBtn = document.getElementById('compare-btn');
+            expect(compareBtn).toBeDefined();
+            
+            compareBtn.click();
+            
+            expect(detailPanel.comparisonMode).toBe(true);
+        });
+        
+        it('should show prompt when in comparison mode without second planet', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            
+            const prompt = document.querySelector('.comparison-prompt');
+            expect(prompt).toBeDefined();
+            expect(prompt.textContent).toContain(mockPlanet.name);
+        });
+        
+        it('should set comparison planet when clicking second planet in comparison mode', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            expect(detailPanel.comparisonPlanet).toBe(secondPlanet);
+            expect(detailPanel.currentPlanet).toBe(mockPlanet);
+        });
+        
+        it('should display comparison view with both planets', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            const comparisonMode = document.querySelector('.comparison-mode');
+            expect(comparisonMode).toBeDefined();
+            
+            const cards = document.querySelectorAll('.planet-card');
+            expect(cards.length).toBe(2);
+            
+            expect(document.body.textContent).toContain(mockPlanet.name);
+            expect(document.body.textContent).toContain(secondPlanet.name);
+        });
+        
+        it('should exit comparison mode when exit button is clicked', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            const exitBtn = document.getElementById('exit-comparison');
+            exitBtn.click();
+            
+            expect(detailPanel.comparisonMode).toBe(false);
+            expect(detailPanel.comparisonPlanet).toBeNull();
+        });
+        
+        it('should exit comparison mode when hiding panel', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            detailPanel.hide();
+            
+            expect(detailPanel.comparisonMode).toBe(false);
+            expect(detailPanel.comparisonPlanet).toBeNull();
+        });
+        
+        it('should exit comparison mode when clicking same planet', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(mockPlanet);
+            
+            expect(detailPanel.comparisonMode).toBe(false);
+        });
+        
+        it('should display comparison bars', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            const bars = document.querySelectorAll('.comparison-bar');
+            expect(bars.length).toBeGreaterThan(0);
+        });
+        
+        it('should show stat differences', () => {
+            detailPanel.show(mockPlanet);
+            detailPanel.enterComparisonMode();
+            detailPanel.show(secondPlanet);
+            
+            const differences = document.querySelectorAll('.stat-difference');
+            expect(differences.length).toBeGreaterThan(0);
+        });
+        
+        it('should calculate ratio correctly', () => {
+            const ratio = detailPanel.calculateRatio(100, 50);
+            expect(ratio).toBe('2.00');
+        });
+        
+        it('should format comparison for larger values', () => {
+            const comparison = detailPanel.formatComparison(100, 50);
+            expect(comparison).toContain('2.00×');
+            expect(comparison).toContain('larger');
+        });
+        
+        it('should format comparison for smaller values', () => {
+            const comparison = detailPanel.formatComparison(50, 100);
+            expect(comparison).toContain('2.00×');
+            expect(comparison).toContain('smaller');
+        });
+        
+        it('should format similar values', () => {
+            const comparison = detailPanel.formatComparison(100, 100);
+            expect(comparison).toBe('Similar');
+        });
+        
+        it('should create comparison bars with correct percentages', () => {
+            const barHtml = detailPanel.createComparisonBar(100, 50, 'Test');
+            
+            expect(barHtml).toContain('width: 100%');
+            expect(barHtml).toContain('width: 50%');
+            expect(barHtml).toContain('Test');
+        });
+    });
 });

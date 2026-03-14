@@ -179,6 +179,200 @@ body {
     transform: scale(0.98);
 }
 
+.compare-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(100, 150, 255, 0.2);
+    color: #6495ff;
+    border: 1px solid #6495ff;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin-bottom: 10px;
+}
+
+.compare-btn:hover {
+    background: rgba(100, 150, 255, 0.3);
+    color: #fff;
+}
+
+.compare-btn:active {
+    transform: scale(0.98);
+}
+
+/* Comparison Mode */
+.comparison-prompt {
+    padding: 40px 20px;
+    text-align: center;
+    color: #8895a7;
+    font-size: 1rem;
+}
+
+.comparison-prompt strong {
+    color: #6495ff;
+}
+
+.comparison-mode {
+    padding: 0;
+}
+
+.comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+.comparison-header h3 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin: 0;
+}
+
+.exit-comparison-btn {
+    background: none;
+    border: none;
+    color: #8895a7;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.exit-comparison-btn:hover {
+    background: rgba(100, 150, 255, 0.1);
+    color: #fff;
+}
+
+.comparison-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.planet-card {
+    padding: 16px;
+    background: rgba(100, 150, 255, 0.1);
+    border-radius: 8px;
+    border: 2px solid rgba(100, 150, 255, 0.3);
+    text-align: center;
+}
+
+.planet1-card {
+    border-color: rgba(100, 150, 255, 0.5);
+}
+
+.planet2-card {
+    border-color: rgba(255, 150, 100, 0.5);
+}
+
+.planet-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.planet-type {
+    font-size: 0.85rem;
+    color: #8895a7;
+    text-transform: capitalize;
+}
+
+.comparison-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.comparison-stat-item {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(100, 150, 255, 0.1);
+}
+
+.stat-comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.stat-difference {
+    font-size: 0.85rem;
+    color: #6495ff;
+    font-weight: 600;
+    padding: 4px 8px;
+    background: rgba(100, 150, 255, 0.15);
+    border-radius: 4px;
+}
+
+.stat-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.planet1-value {
+    color: #6495ff !important;
+}
+
+.planet2-value {
+    color: #ff9664 !important;
+}
+
+.comparison-bar-container {
+    margin-top: 8px;
+}
+
+.comparison-bar-label {
+    font-size: 0.75rem;
+    color: #8895a7;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.comparison-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.comparison-bar-wrapper {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.comparison-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.comparison-bar.planet1 {
+    background: linear-gradient(90deg, #6495ff, #4070d0);
+}
+
+.comparison-bar.planet2 {
+    background: linear-gradient(90deg, #ff9664, #e67040);
+}
+
 /* Scrollbar styling */
 .detail-panel::-webkit-scrollbar {
     width: 8px;
