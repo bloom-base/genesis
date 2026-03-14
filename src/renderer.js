@@ -82,15 +82,35 @@ export class SolarSystemRenderer {
     }
     
     /**
-     * Draw orbital paths
+     * Draw orbital paths with fading edges for ethereal effect
      */
     drawOrbits() {
-        this.ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
-        this.ctx.lineWidth = 1;
+        const center = this.toCanvasCoords(0, 0);
         
         this.solarSystem.planets.forEach(planet => {
-            const center = this.toCanvasCoords(0, 0);
             const radius = planet.distance * this.scale;
+            
+            // Calculate line thickness based on zoom level (scale)
+            // More zoomed in = thicker lines, more zoomed out = thinner lines
+            const baseThickness = 1;
+            const scaleFactor = this.scale / 60; // 60 is the default scale
+            const lineWidth = Math.max(0.5, Math.min(2.5, baseThickness * scaleFactor));
+            
+            // Create gradient for fading effect at edges
+            // This creates an ethereal, subtle appearance
+            const gradient = this.ctx.createRadialGradient(
+                center.x, center.y, radius * 0.7,
+                center.x, center.y, radius * 1.3
+            );
+            
+            // Subtle blue-white color with varying alpha for fade effect
+            gradient.addColorStop(0, 'rgba(100, 150, 255, 0.08)');
+            gradient.addColorStop(0.35, 'rgba(120, 160, 255, 0.18)');
+            gradient.addColorStop(0.65, 'rgba(120, 160, 255, 0.18)');
+            gradient.addColorStop(1, 'rgba(100, 150, 255, 0.08)');
+            
+            this.ctx.strokeStyle = gradient;
+            this.ctx.lineWidth = lineWidth;
             
             this.ctx.beginPath();
             this.ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
