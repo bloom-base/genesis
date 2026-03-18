@@ -179,6 +179,47 @@ body {
     transform: scale(0.98);
 }
 
+/* Planet Tooltip */
+.planet-tooltip {
+    position: fixed;
+    z-index: 50;
+    background: rgba(15, 20, 40, 0.92);
+    border: 1px solid rgba(100, 150, 255, 0.4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 140px;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    opacity: 1;
+    transition: opacity 0.18s ease;
+}
+
+.planet-tooltip.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tooltip-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6495ff;
+    margin-bottom: 3px;
+}
+
+.tooltip-type {
+    font-size: 0.78rem;
+    color: #8895a7;
+    text-transform: capitalize;
+    margin-bottom: 6px;
+}
+
+.tooltip-stat {
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    font-variant-numeric: tabular-nums;
+}
+
 /* Scrollbar styling */
 .detail-panel::-webkit-scrollbar {
     width: 8px;
