@@ -34,3 +34,8 @@ yarn-error.log*
 .git-credentials
 .gitconfig
 .npm/
+
+# Claude CLI
+.claude/
+.claude.json
+.cache/
