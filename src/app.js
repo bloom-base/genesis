@@ -8,11 +8,24 @@ import { SolarSystemRenderer } from './renderer.js';
 import { DetailPanel } from './detailPanel.js';
 import { PlanetTooltip } from './tooltip.js';
 
+/**
+ * Increments the localStorage visit counter and updates the footer display.
+ */
+function initVisitCounter() {
+    const STORAGE_KEY = 'genesis_visit_count';
+    const count = (parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) || 0) + 1;
+    localStorage.setItem(STORAGE_KEY, String(count));
+    const el = document.getElementById('visit-counter');
+    if (el) el.textContent = `Visits: ${count}`;
+}
+
 class App {
     constructor() {
         this.canvas = document.getElementById('universe-canvas');
         this.detailPanel = new DetailPanel();
         this.tooltip = new PlanetTooltip();
+
+        initVisitCounter();
 
         // Generate solar system with a random seed
         const seed = Math.floor(Math.random() * 1000000);

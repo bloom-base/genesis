@@ -239,6 +239,22 @@ body {
     background: rgba(100, 150, 255, 0.5);
 }
 
+/* Site Footer */
+#site-footer {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+#visit-counter {
+    font-size: 0.8rem;
+    color: rgba(136, 149, 167, 0.7);
+    letter-spacing: 0.04em;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .detail-panel {
