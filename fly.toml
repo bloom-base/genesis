@@ -1,6 +1,9 @@
 app = "bloom-genesis-e9b0eb08"
 primary_region = "iad"
 
+[build]
+  builder = "docker"
+
 [http_service]
   internal_port = 8080
   force_https = true
