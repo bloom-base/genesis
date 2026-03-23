@@ -99,13 +99,63 @@ export class SolarSystemRenderer {
     }
     
     /**
+     * Calculate glow intensity for a planet based on its proximity to the star.
+     * Returns a value between 0 (farthest orbit) and 1 (closest orbit),
+     * with a subtle sine-wave pulse layered on top for a breathing effect.
+     */
+    getStarProximityGlow(planet) {
+        const planets = this.solarSystem.planets;
+        const distances = planets.map(p => p.distance);
+        const minDist = Math.min(...distances);
+        const maxDist = Math.max(...distances);
+
+        // Normalise distance to [0,1] then invert so closer = higher base intensity
+        const distRange = maxDist - minDist;
+        const baseIntensity = distRange > 0
+            ? 1 - (planet.distance - minDist) / distRange
+            : 0.5;
+
+        // Subtle breathing pulse — frequency varies slightly so each planet feels unique
+        const pulseFreq = 0.0006 + baseIntensity * 0.0004;
+        const pulse = Math.sin(this.animationTime * pulseFreq) * 0.12;
+
+        return Math.max(0, Math.min(1, baseIntensity + pulse));
+    }
+
+    /**
      * Draw a single planet
      */
     drawPlanet(planet, isHovered = false) {
         const pos = this.getPlanetPosition(planet);
         const canvasPos = this.toCanvasCoords(pos.x, pos.y);
         const radius = planet.size / 2;
-        
+
+        // --- Star proximity glow ---
+        // A warm halo whose size and opacity intensify as the planet nears its star.
+        const glowIntensity = this.getStarProximityGlow(planet);
+        const star = this.solarSystem.star;
+
+        // Blend star colour with the planet's own colour for a believable warm tint
+        const glowR = Math.round(star.color.r * 0.55 + planet.color.r * 0.45);
+        const glowG = Math.round(star.color.g * 0.55 + planet.color.g * 0.45);
+        const glowB = Math.round(star.color.b * 0.55 + planet.color.b * 0.45);
+
+        // Glow disc grows from 1.8× to 3.2× the planet's radius
+        const glowRadius = radius * (1.8 + glowIntensity * 1.4);
+        const glowOpacity = 0.08 + glowIntensity * 0.32; // 0.08 → 0.40
+
+        const proximityGlow = this.ctx.createRadialGradient(
+            canvasPos.x, canvasPos.y, radius * 0.4,
+            canvasPos.x, canvasPos.y, glowRadius
+        );
+        proximityGlow.addColorStop(0, `rgba(${glowR}, ${glowG}, ${glowB}, ${glowOpacity.toFixed(3)})`);
+        proximityGlow.addColorStop(1, `rgba(${glowR}, ${glowG}, ${glowB}, 0)`);
+
+        this.ctx.fillStyle = proximityGlow;
+        this.ctx.beginPath();
+        this.ctx.arc(canvasPos.x, canvasPos.y, glowRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+
         // Hover glow
         if (isHovered) {
             const glowGradient = this.ctx.createRadialGradient(
@@ -131,7 +181,9 @@ export class SolarSystemRenderer {
             radius
         );
         
-        const lightColor = `rgb(${Math.min(255, planet.color.r + 40)}, ${Math.min(255, planet.color.g + 40)}, ${Math.min(255, planet.color.b + 40)})`;
+        // Proximity-driven brightness boost: up to +25 RGB on the highlight
+        const brightBoost = Math.round(glowIntensity * 25);
+        const lightColor = `rgb(${Math.min(255, planet.color.r + 40 + brightBoost)}, ${Math.min(255, planet.color.g + 40 + brightBoost)}, ${Math.min(255, planet.color.b + 40 + brightBoost)})`;
         const darkColor = `rgb(${Math.max(0, planet.color.r - 40)}, ${Math.max(0, planet.color.g - 40)}, ${Math.max(0, planet.color.b - 40)})`;
         
         gradient.addColorStop(0, lightColor);

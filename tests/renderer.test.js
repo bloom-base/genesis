@@ -172,6 +172,57 @@ describe('SolarSystemRenderer', () => {
         });
     });
     
+    describe('getStarProximityGlow', () => {
+        it('should return a value between 0 and 1', () => {
+            for (const planet of solarSystem.planets) {
+                const intensity = renderer.getStarProximityGlow(planet);
+                expect(intensity).toBeGreaterThanOrEqual(0);
+                expect(intensity).toBeLessThanOrEqual(1);
+            }
+        });
+
+        it('should give the closest planet a higher base intensity than the farthest', () => {
+            const sorted = [...solarSystem.planets].sort((a, b) => a.distance - b.distance);
+            const closest = sorted[0];
+            const farthest = sorted[sorted.length - 1];
+
+            // Set animationTime to 0 so pulse is 0
+            renderer.animationTime = 0;
+            const closestIntensity = renderer.getStarProximityGlow(closest);
+            const farthestIntensity = renderer.getStarProximityGlow(farthest);
+
+            expect(closestIntensity).toBeGreaterThan(farthestIntensity);
+        });
+
+        it('should change over time due to pulsing', () => {
+            // Use the farthest planet so its baseIntensity is 0 and we can
+            // observe the pulse lifting it away from 0 without hitting the clamp.
+            const sorted = [...solarSystem.planets].sort((a, b) => a.distance - b.distance);
+            const farthest = sorted[sorted.length - 1];
+
+            renderer.animationTime = 0;
+            const intensity1 = renderer.getStarProximityGlow(farthest);
+
+            // Advance to a point where sin() produces a clearly non-zero value
+            renderer.animationTime = 2000;
+            const intensity2 = renderer.getStarProximityGlow(farthest);
+
+            expect(Math.abs(intensity1 - intensity2)).toBeGreaterThan(0.001);
+        });
+
+        it('should return 0.5 when there is only one planet (no distance range)', () => {
+            // Create a solar system mock with a single planet
+            const singlePlanet = { distance: 2, size: 20, color: { r: 100, g: 100, b: 100 }, angle: 0 };
+            const mockSystem = { ...solarSystem, planets: [singlePlanet] };
+            const r = new SolarSystemRenderer(canvas, mockSystem);
+            r.animationTime = 0;
+
+            // With only one planet distRange is 0, so baseIntensity should be 0.5
+            const intensity = r.getStarProximityGlow(singlePlanet);
+            expect(intensity).toBeCloseTo(0.5, 1);
+        });
+    });
+
     describe('render', () => {
         it('should not throw errors when rendering', () => {
             expect(() => renderer.render(0)).not.toThrow();
