@@ -55,6 +55,68 @@ const SYLLABLES = [
 const PREFIXES = ['', '', '', 'New ', 'Alpha ', 'Beta ', 'Nova ', 'Proxima '];
 const SUFFIXES = ['', '', '', ' Prime', ' Minor', ' Major', ' II', ' III'];
 
+/**
+ * Generate a memorable star system name that feels like an astronomical catalog entry.
+ * Three naming styles are used with equal probability:
+ *  - Catalog designation: "Kepler-447", "GJ-1214"
+ *  - Named star + suffix: "Vega Prime", "Rigel IV"
+ *  - Invented star name: "Solaris IX", "Nexara Prime"
+ */
+export function generateSystemName(seed) {
+    // Use a distinct RNG offset so system names don't share state with planet names
+    const random = createSeededRandom((seed * 2654435761) >>> 0);
+
+    const CATALOG_DESIGNATIONS = [
+        'Kepler', 'HD', 'HIP', 'GJ', 'Wolf', 'Ross', 'TRAPPIST', 'TOI', 'PSR', 'LHS',
+    ];
+    const KNOWN_STARS = [
+        'Vega', 'Rigel', 'Deneb', 'Altair', 'Spica', 'Antares', 'Capella',
+        'Procyon', 'Castor', 'Pollux', 'Regulus', 'Fomalhaut', 'Achernar',
+        'Arcturus', 'Elnath', 'Hadar', 'Mimosa', 'Acrux', 'Canopus', 'Zubenelgenubi',
+    ];
+    const INVENTED_ROOTS = [
+        'Solaris', 'Aethon', 'Luminar', 'Celastra', 'Korvath', 'Iridian',
+        'Nexara', 'Pyranthos', 'Velkar', 'Orinthis', 'Zaloran', 'Crestos',
+        'Elythara', 'Drakonar', 'Vesperis', 'Threnor', 'Aurantis', 'Cygnar',
+    ];
+    const STAR_SUFFIXES = [
+        'Prime', 'Minor', 'Major', 'Alpha', 'Beta', 'Gamma',
+        'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
+    ];
+
+    const style = randomInt(random, 0, 2);
+
+    if (style === 0) {
+        // e.g. "Kepler-447", "GJ-1214"
+        const catalog = randomChoice(random, CATALOG_DESIGNATIONS);
+        const number  = randomInt(random, 100, 9999);
+        return `${catalog}-${number}`;
+    } else if (style === 1) {
+        // e.g. "Vega Prime", "Rigel IV"
+        const star   = randomChoice(random, KNOWN_STARS);
+        const suffix = randomChoice(random, STAR_SUFFIXES);
+        return `${star} ${suffix}`;
+    } else {
+        // e.g. "Solaris IX", "Nexara Prime"
+        const root   = randomChoice(random, INVENTED_ROOTS);
+        const suffix = randomChoice(random, STAR_SUFFIXES);
+        return `${root} ${suffix}`;
+    }
+}
+
+/**
+ * Generate a star spectral class and matching colour.
+ * Weighted towards cooler, more common stellar types (K and M dwarfs).
+ */
+function generateStarSpectralClass(random) {
+    const r = random();
+    if (r < 0.05) return { spectralClass: 'A', color: { r: 200, g: 220, b: 255 } }; // blue-white
+    if (r < 0.15) return { spectralClass: 'F', color: { r: 255, g: 245, b: 210 } }; // yellow-white
+    if (r < 0.35) return { spectralClass: 'G', color: { r: 255, g: 230, b: 150 } }; // yellow (Sun-like)
+    if (r < 0.58) return { spectralClass: 'K', color: { r: 255, g: 200, b: 100 } }; // orange
+    return         { spectralClass: 'M', color: { r: 255, g: 150, b:  80 } }; // red dwarf
+}
+
 export function generatePlanetName(random) {
     const syllableCount = randomInt(random, 2, 4);
     let name = '';
@@ -277,20 +339,26 @@ export function generatePlanet(random, orbitIndex, starSeed) {
 export function generateSolarSystem(seed = 42) {
     const random = createSeededRandom(seed);
     const planetCount = randomInt(random, 4, 8);
-    
+
+    // Derive name and star appearance from the seed
+    const name = generateSystemName(seed);
+    const { spectralClass, color: starColor } = generateStarSpectralClass(random);
+
     const system = {
         seed,
+        name,
         star: {
-            name: 'Sol ' + seed,
+            name,
+            spectralClass,
             radius: 50,
-            color: { r: 255, g: 230, b: 150 }
+            color: starColor,
         },
         planets: []
     };
-    
+
     for (let i = 0; i < planetCount; i++) {
         system.planets.push(generatePlanet(random, i, seed));
     }
-    
+
     return system;
 }
