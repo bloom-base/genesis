@@ -31,6 +31,9 @@ class App {
         const seed = Math.floor(Math.random() * 1000000);
         this.solarSystem = generateSolarSystem(seed);
 
+        // Display the system name and metadata in the info bar
+        this.updateSystemInfo();
+
         // Initialize renderer
         this.renderer = new SolarSystemRenderer(this.canvas, this.solarSystem);
 
@@ -40,6 +43,23 @@ class App {
         // Start animation loop
         this.lastTime = performance.now();
         this.animate();
+    }
+
+    /**
+     * Populate the system info bar with the generated system name and stats.
+     */
+    updateSystemInfo() {
+        const { name, star, planets } = this.solarSystem;
+
+        const nameEl = document.getElementById('system-name');
+        if (nameEl) nameEl.textContent = name;
+
+        const metaEl = document.getElementById('system-meta');
+        if (metaEl) {
+            const count = planets.length;
+            metaEl.textContent =
+                `${count} planet${count !== 1 ? 's' : ''} · ${star.spectralClass}-type star`;
+        }
     }
 
     setupEventListeners() {
