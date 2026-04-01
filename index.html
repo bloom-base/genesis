@@ -25,7 +25,12 @@
                 <p id="game-subtitle">An infinite world awaits</p>
                 <button id="enter-btn">Enter World</button>
                 <p id="controls-hint">
-                    WASD&nbsp;·&nbsp;Move &nbsp;|&nbsp; Mouse&nbsp;·&nbsp;Look &nbsp;|&nbsp; Shift&nbsp;·&nbsp;Sprint &nbsp;|&nbsp; 1–9&nbsp;·&nbsp;Hotbar &nbsp;|&nbsp; ESC&nbsp;·&nbsp;Pause
+                    WASD&nbsp;·&nbsp;Move &nbsp;|&nbsp;
+                    Mouse&nbsp;·&nbsp;Look &nbsp;|&nbsp;
+                    Shift&nbsp;·&nbsp;Sprint &nbsp;|&nbsp;
+                    1–9&nbsp;·&nbsp;Hotbar &nbsp;|&nbsp;
+                    I&nbsp;·&nbsp;Inventory &nbsp;|&nbsp;
+                    ESC&nbsp;·&nbsp;Pause
                 </p>
             </div>
             <p id="paused-label">PAUSED — Click to resume</p>
@@ -35,55 +40,40 @@
         <div id="hud">
             <div id="crosshair">+</div>
 
-            <!-- Hotbar — 9 item/spell slots, keys 1-9 -->
-            <div id="hotbar">
-                <div class="hotbar-slot active" data-slot="1">
-                    <span class="hotbar-key">1</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
+            <!-- Hotbar — always visible while in-world, populated by inventoryUI.js -->
+            <div id="hotbar"></div>
+
+            <!-- Briefly shown name of the selected hotbar item -->
+            <div id="selected-item-name"></div>
+        </div>
+
+        <!-- ── Inventory Panel ──────────────────────────────────────────────── -->
+        <!--
+            Shown when the player presses I or E.
+            Pointer lock is released while this is open so the mouse can interact.
+        -->
+        <div id="inventory-panel" style="display:none" role="dialog" aria-label="Inventory">
+            <div id="inventory-window">
+
+                <!-- Header -->
+                <div id="inventory-header">
+                    <span id="inventory-title">Inventory</span>
+                    <button id="inventory-close" title="Close (I)">✕</button>
                 </div>
-                <div class="hotbar-slot" data-slot="2">
-                    <span class="hotbar-key">2</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="3">
-                    <span class="hotbar-key">3</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="4">
-                    <span class="hotbar-key">4</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="5">
-                    <span class="hotbar-key">5</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="6">
-                    <span class="hotbar-key">6</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="7">
-                    <span class="hotbar-key">7</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="8">
-                    <span class="hotbar-key">8</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
-                <div class="hotbar-slot" data-slot="9">
-                    <span class="hotbar-key">9</span>
-                    <span class="hotbar-icon"></span>
-                    <span class="hotbar-count"></span>
-                </div>
+
+                <!-- Category filter tabs — injected by inventoryUI.js -->
+                <div id="inventory-tabs" role="tablist" aria-label="Filter by category"></div>
+
+                <!-- 4 × 9 item grid — injected by inventoryUI.js -->
+                <div id="inventory-grid" aria-label="Inventory slots"></div>
+
+                <!-- Hotbar row for equipping — injected by inventoryUI.js -->
+                <div id="inv-hotbar-label">Hotbar</div>
+                <div id="inv-panel-hotbar" aria-label="Hotbar slots"></div>
+
             </div>
         </div>
+
     </div>
 
     <footer id="site-footer">

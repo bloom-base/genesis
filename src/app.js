@@ -10,7 +10,8 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { Sky } from 'three/addons/objects/Sky.js';
 import { createTerrain, createWater } from './terrain.js';
 import { createTrees } from './trees.js';
-import { createHotbar } from './hotbar.js';
+import { createInventorySystem } from './inventory.js';
+import { createInventoryUI } from './inventoryUI.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -134,12 +135,35 @@ function findStartPosition(getHeight, seaLevel) {
     return { x: 0, y: 5 + PLAYER_EYE_HEIGHT, z: 0 };
 }
 
+// ── Inventory ─────────────────────────────────────────────────────────────────
+const invSystem = createInventorySystem();
+const inventoryUI = createInventoryUI(invSystem);
+
+let inventoryOpen = false; // true while the inventory panel is visible
+
+function openInventory() {
+    inventoryOpen = true;
+    controls.unlock(); // releases pointer lock; the 'unlock' handler shows the panel
+}
+
+function closeInventory() {
+    inventoryOpen = false;
+    inventoryUI.close();
+    // Hide any lingering overlay then immediately try to re-lock.
+    // If re-lock succeeds the 'lock' event will restore HUD.
+    // If it fails (e.g. focus lost) the 'unlock' event fires and shows the
+    // normal pause overlay — which is the correct fallback.
+    overlay.style.display = 'none';
+    controls.lock();
+}
+
 // ── UI state ──────────────────────────────────────────────────────────────────
 const overlay     = document.getElementById('overlay');
 const titleScreen = document.getElementById('title-screen');
 const pausedLabel = document.getElementById('paused-label');
 const hud         = document.getElementById('hud');
 const enterBtn    = document.getElementById('enter-btn');
+const panelEl     = document.getElementById('inventory-panel');
 
 let inWorld = false; // true once the player has entered for the first time
 
@@ -153,52 +177,76 @@ overlay.addEventListener('click', (e) => {
     if (e.target === overlay && inWorld) enterWorld();
 });
 
+// Close inventory when the panel fires its custom close request
+// (from the ✕ button or clicking the backdrop).
+panelEl.addEventListener('request-close', () => {
+    if (inventoryOpen) closeInventory();
+});
+
 controls.addEventListener('lock', () => {
     inWorld = true;
     overlay.style.display = 'none';
     hud.style.display = 'block';
+    inventoryUI.close();
+    inventoryOpen = false;
 });
 
 controls.addEventListener('unlock', () => {
-    overlay.style.display = 'flex';
     hud.style.display = 'none';
 
-    if (inWorld) {
-        // Show "paused" rather than the full title screen.
+    if (inventoryOpen) {
+        // Show the inventory panel without the normal pause overlay.
+        overlay.style.display = 'none';
+        inventoryUI.open();
+    } else if (inWorld) {
+        // Normal pause — show the overlay with "PAUSED" text.
+        overlay.style.display = 'flex';
         titleScreen.style.display = 'none';
         pausedLabel.style.display = 'block';
         overlay.classList.add('paused');
     }
 });
 
-// ── Hotbar ────────────────────────────────────────────────────────────────────
-const hotbar = createHotbar();
-
 // ── Keyboard input ────────────────────────────────────────────────────────────
 const keys = new Set();
-
-// Map KeyboardEvent.code values for digits 1-9 to 0-based slot indices.
-const DIGIT_CODES = {
-    Digit1: 0, Digit2: 1, Digit3: 2,
-    Digit4: 3, Digit5: 4, Digit6: 5,
-    Digit7: 6, Digit8: 7, Digit9: 8,
-};
 
 document.addEventListener('keydown', (e) => {
     keys.add(e.code);
 
-    // Hotbar slot selection — only while actively playing.
-    if (controls.isLocked && e.code in DIGIT_CODES) {
-        hotbar.selectSlot(DIGIT_CODES[e.code]);
+    // ── Inventory toggle — I or E ──────────────────────────────────────────
+    if (inWorld && (e.code === 'KeyI' || e.code === 'KeyE')) {
         e.preventDefault();
+        if (inventoryOpen) {
+            closeInventory();
+        } else if (controls.isLocked) {
+            openInventory();
+        }
         return;
     }
+
+    // ── Close inventory with Escape (pointer lock already released) ────────
+    if (e.code === 'Escape' && inventoryOpen) {
+        // Don't call preventDefault — browser handles Escape on its own.
+        closeInventory();
+        return;
+    }
+
+    // ── Hotbar quick-select 1–9 ────────────────────────────────────────────
+    if (controls.isLocked && !inventoryOpen) {
+        const digit = parseInt(e.key, 10);
+        if (digit >= 1 && digit <= 9) {
+            invSystem.selectHotbarSlot(digit - 1);
+            return;
+        }
+    }
+
 
     // Prevent browser scroll / default on game keys while playing.
     if (controls.isLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.key)) {
         e.preventDefault();
     }
 });
+
 document.addEventListener('keyup', (e) => keys.delete(e.code));
 
 // ── Movement helpers ──────────────────────────────────────────────────────────
