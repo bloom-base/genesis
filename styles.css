@@ -1,14 +1,14 @@
-* {
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #0a0e27;
-    color: #e0e0e0;
     overflow: hidden;
+    background: #000;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #fff;
 }
 
 #app {
@@ -17,365 +17,149 @@ body {
     position: relative;
 }
 
-#universe-canvas {
+#game-canvas {
+    display: block;
     width: 100%;
     height: 100%;
-    display: block;
-    cursor: pointer;
 }
 
-/* Controls */
-.controls {
+/* ── Overlay (title screen / paused) ───────────────────────────────────────── */
+
+#overlay {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.controls h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 0 20px rgba(100, 150, 255, 0.5);
-}
-
-.subtitle {
-    font-size: 1rem;
-    color: #8895a7;
-    margin-top: 5px;
-}
-
-/* System info bar — shown beneath the Genesis title */
-.system-info {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(100, 150, 255, 0.15);
-}
-
-.system-catalog-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.16em;
-    color: rgba(136, 149, 167, 0.65);
-    text-transform: uppercase;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.system-name {
-    font-size: 1.45rem;
-    font-weight: 700;
-    color: #a8c4ff;
-    text-shadow: 0 0 18px rgba(100, 150, 255, 0.55);
-    letter-spacing: 0.03em;
-    line-height: 1.2;
-}
-
-.system-meta {
-    font-size: 0.78rem;
-    color: rgba(136, 149, 167, 0.7);
-    margin-top: 5px;
-    letter-spacing: 0.02em;
-}
-
-/* Detail Panel */
-.detail-panel {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 400px;
-    max-height: calc(100vh - 40px);
-    background: rgba(15, 20, 40, 0.95);
-    border: 1px solid rgba(100, 150, 255, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    overflow-y: auto;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    z-index: 100;
-}
-
-.detail-panel.hidden {
-    transform: translateX(450px);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.detail-panel-header {
-    padding: 20px;
-    border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+    inset: 0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.detail-panel-header h2 {
-    font-size: 1.5rem;
-    color: #6495ff;
-    margin: 0;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: #8895a7;
-    font-size: 2rem;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 20;
+    transition: background 0.3s;
 }
 
-.close-btn:hover {
-    background: rgba(100, 150, 255, 0.1);
-    color: #fff;
+#overlay.paused {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
 }
 
-.detail-panel-content {
-    padding: 20px;
-}
-
-.planet-description {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #c0c8d4;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: rgba(100, 150, 255, 0.05);
-    border-radius: 8px;
-    border-left: 3px solid #6495ff;
-}
-
-.planet-stats h3 {
-    font-size: 1.1rem;
-    color: #fff;
-    margin-bottom: 16px;
-}
-
-.stat-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
-.stat-item {
+#title-screen {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 6px;
-    border: 1px solid rgba(100, 150, 255, 0.1);
+    gap: 18px;
+    text-align: center;
 }
 
-.stat-label {
-    font-size: 0.9rem;
-    color: #8895a7;
-    font-weight: 500;
+#game-title {
+    font-size: clamp(3.5rem, 12vw, 8rem);
+    font-weight: 900;
+    letter-spacing: 0.22em;
+    color: #fff;
+    text-shadow:
+        0 0 60px rgba(120, 210, 255, 0.7),
+        0 0 20px rgba(120, 210, 255, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.9);
 }
 
-.stat-value {
+#game-subtitle {
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: rgba(200, 230, 255, 0.8);
+}
+
+#enter-btn {
+    margin-top: 6px;
+    padding: 14px 44px;
     font-size: 0.95rem;
-    color: #fff;
     font-weight: 600;
-}
-
-.detail-panel-footer {
-    padding: 20px;
-    border-top: 1px solid rgba(100, 150, 255, 0.2);
-}
-
-.dismiss-btn {
-    width: 100%;
-    padding: 12px;
-    background: #6495ff;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1.5px solid rgba(120, 210, 255, 0.55);
+    background: rgba(120, 210, 255, 0.12);
     color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
-.dismiss-btn:hover {
-    background: #5080e6;
+#enter-btn:hover {
+    background: rgba(120, 210, 255, 0.25);
+    border-color: rgba(120, 210, 255, 0.9);
+    box-shadow: 0 0 20px rgba(120, 210, 255, 0.3);
+    transform: scale(1.03);
 }
 
-.dismiss-btn:active {
-    transform: scale(0.98);
+#enter-btn:active {
+    transform: scale(0.97);
 }
 
-/* Planet Tooltip */
-.planet-tooltip {
-    position: fixed;
-    z-index: 50;
-    background: rgba(15, 20, 40, 0.92);
-    border: 1px solid rgba(100, 150, 255, 0.4);
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-width: 140px;
-    pointer-events: none;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    opacity: 1;
-    transition: opacity 0.18s ease;
+#controls-hint {
+    font-size: 0.75rem;
+    color: rgba(180, 210, 255, 0.45);
+    letter-spacing: 0.06em;
 }
 
-.planet-tooltip.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.tooltip-name {
+/* Paused label — shown instead of title when resuming */
+#paused-label {
+    display: none;
     font-size: 1rem;
-    font-weight: 600;
-    color: #6495ff;
-    margin-bottom: 3px;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.65);
+    text-transform: uppercase;
 }
 
-.tooltip-type {
-    font-size: 0.78rem;
-    color: #8895a7;
-    text-transform: capitalize;
-    margin-bottom: 6px;
-}
+/* ── HUD ────────────────────────────────────────────────────────────────────── */
 
-.tooltip-stat {
-    font-size: 0.85rem;
-    color: #e0e0e0;
-    font-variant-numeric: tabular-nums;
-}
-
-/* Scrollbar styling */
-.detail-panel::-webkit-scrollbar {
-    width: 8px;
-}
-
-.detail-panel::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-}
-
-.detail-panel::-webkit-scrollbar-thumb {
-    background: rgba(100, 150, 255, 0.3);
-    border-radius: 4px;
-}
-
-.detail-panel::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 150, 255, 0.5);
-}
-
-/* Planet Search Box */
-.search-box {
+#hud {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 110;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(15, 20, 40, 0.88);
-    border: 1px solid rgba(100, 150, 255, 0.3);
-    border-radius: 8px;
-    padding: 0 6px 0 10px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    transition: border-color 0.2s;
-}
-
-.search-box:focus-within {
-    border-color: rgba(100, 150, 255, 0.7);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(100, 150, 255, 0.15);
-}
-
-.search-icon {
-    color: rgba(136, 149, 167, 0.6);
-    font-size: 1.1rem;
-    line-height: 1;
+    inset: 0;
     pointer-events: none;
+    display: none;
+    z-index: 10;
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4rem;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
     user-select: none;
 }
 
-.planet-search-input {
-    background: none;
-    border: none;
-    outline: none;
-    color: #e0e0e0;
-    font-size: 0.88rem;
-    padding: 9px 4px;
-    width: 190px;
-    font-family: inherit;
-}
+/* ── Footer ─────────────────────────────────────────────────────────────────── */
 
-.planet-search-input::placeholder {
-    color: rgba(136, 149, 167, 0.55);
-}
-
-.search-clear-btn {
-    background: none;
-    border: none;
-    color: rgba(136, 149, 167, 0.7);
-    font-size: 1.3rem;
-    cursor: pointer;
-    padding: 2px 4px;
-    line-height: 1;
-    border-radius: 4px;
-    transition: color 0.2s, background 0.2s;
-    flex-shrink: 0;
-}
-
-.search-clear-btn:hover {
-    color: #fff;
-    background: rgba(100, 150, 255, 0.15);
-}
-
-/* Search result count badge */
-.search-match-count {
-    font-size: 0.72rem;
-    color: rgba(100, 150, 255, 0.8);
-    white-space: nowrap;
-    padding: 0 4px;
-    pointer-events: none;
-}
-
-/* Site Footer */
 #site-footer {
     position: fixed;
     bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10;
+    z-index: 30;
     pointer-events: none;
 }
 
 #visit-counter {
-    font-size: 0.8rem;
-    color: rgba(136, 149, 167, 0.7);
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    color: rgba(180, 210, 255, 0.38);
+    letter-spacing: 0.06em;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .detail-panel {
-        width: calc(100vw - 40px);
-        right: 20px;
+/* ── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    #game-title {
+        letter-spacing: 0.12em;
     }
 
-    .detail-panel.hidden {
-        transform: translateY(calc(100vh + 20px));
-    }
-
-    .controls h1 {
-        font-size: 2rem;
-    }
-
-    .planet-search-input {
-        width: 130px;
+    #controls-hint {
+        font-size: 0.65rem;
+        padding: 0 16px;
     }
 }

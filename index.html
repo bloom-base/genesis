@@ -3,89 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genesis - Digital Universe</title>
+    <title>Genesis</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <div id="app">
-        <canvas id="universe-canvas"></canvas>
-        
-        <div id="detail-panel" class="detail-panel hidden">
-            <div class="detail-panel-header">
-                <h2 id="planet-name">Planet Name</h2>
-                <button id="close-panel" class="close-btn" aria-label="Close panel">×</button>
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Title / Pause overlay -->
+        <div id="overlay">
+            <div id="title-screen">
+                <h1 id="game-title">GENESIS</h1>
+                <p id="game-subtitle">An infinite world awaits</p>
+                <button id="enter-btn">Enter World</button>
+                <p id="controls-hint">
+                    WASD&nbsp;·&nbsp;Move &nbsp;|&nbsp; Mouse&nbsp;·&nbsp;Look &nbsp;|&nbsp; Shift&nbsp;·&nbsp;Sprint &nbsp;|&nbsp; ESC&nbsp;·&nbsp;Pause
+                </p>
             </div>
-            
-            <div class="detail-panel-content">
-                <div class="planet-description" id="planet-description">
-                    Loading planet data...
-                </div>
-                
-                <div class="planet-stats">
-                    <h3>Planetary Statistics</h3>
-                    <div class="stat-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Diameter</span>
-                            <span class="stat-value" id="stat-diameter">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Distance from Star</span>
-                            <span class="stat-value" id="stat-distance">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Orbital Period</span>
-                            <span class="stat-value" id="stat-period">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Surface Temperature</span>
-                            <span class="stat-value" id="stat-temperature">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Atmosphere</span>
-                            <span class="stat-value" id="stat-atmosphere">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Terrain Type</span>
-                            <span class="stat-value" id="stat-terrain">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="detail-panel-footer">
-                <button id="dismiss-panel" class="dismiss-btn">Dismiss</button>
-            </div>
-        </div>
-        
-        <div id="planet-tooltip" class="planet-tooltip hidden" role="tooltip" aria-live="polite">
-            <div class="tooltip-name"></div>
-            <div class="tooltip-type"></div>
-            <div class="tooltip-stat"></div>
+            <p id="paused-label">PAUSED — Click to resume</p>
         </div>
 
-        <div class="controls">
-            <h1>Genesis</h1>
-            <p class="subtitle">Click a planet to explore</p>
-
-            <div class="system-info" id="system-info" aria-label="Current star system">
-                <div class="system-catalog-label">STAR SYSTEM</div>
-                <div class="system-name" id="system-name">—</div>
-                <div class="system-meta" id="system-meta"></div>
-            </div>
-        </div>
-
-        <div id="search-box" class="search-box" role="search">
-            <span class="search-icon" aria-hidden="true">⌕</span>
-            <input
-                type="text"
-                id="planet-search"
-                class="planet-search-input"
-                placeholder="Search planets…"
-                autocomplete="off"
-                spellcheck="false"
-                aria-label="Search planets by name or type"
-            >
-            <button id="search-clear" class="search-clear-btn" aria-label="Clear search" hidden>×</button>
+        <!-- In-game HUD -->
+        <div id="hud">
+            <div id="crosshair">+</div>
         </div>
     </div>
 
