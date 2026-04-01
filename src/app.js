@@ -11,6 +11,7 @@ import { Sky } from 'three/addons/objects/Sky.js';
 import { createTerrain, createWater } from './terrain.js';
 import { createTrees } from './trees.js';
 import { createHotbar } from './hotbar.js';
+import { SpellSystem } from './spells.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -171,8 +172,25 @@ controls.addEventListener('unlock', () => {
     }
 });
 
-// ── Hotbar ────────────────────────────────────────────────────────────────────
+// ── Hotbar + Spell system ─────────────────────────────────────────────────────
 const hotbar = createHotbar();
+
+// Place fireball spell in slot 3 (0-based index 2).
+hotbar.setItem(2, {
+    type:     'spell',
+    id:       'fireball',
+    name:     'Fireball',
+    icon:     '🔥',
+    quantity: null,
+    data:     {},
+});
+
+const spellSystem = new SpellSystem(scene, camera, getHeight, seaLevel);
+spellSystem.initUI();
+
+// Register the slot 3 DOM element so SpellSystem can render its cooldown overlay.
+const fireBallSlotEl = document.querySelector('#hotbar .hotbar-slot[data-slot="3"]');
+spellSystem.registerCooldownSlot('fireball', fireBallSlotEl);
 
 // ── Keyboard input ────────────────────────────────────────────────────────────
 const keys = new Set();
@@ -187,9 +205,13 @@ const DIGIT_CODES = {
 document.addEventListener('keydown', (e) => {
     keys.add(e.code);
 
-    // Hotbar slot selection — only while actively playing.
-    if (controls.isLocked && e.code in DIGIT_CODES) {
-        hotbar.selectSlot(DIGIT_CODES[e.code]);
+    // Hotbar slot selection + spell casting — only while actively playing.
+    if (controls.isLocked && e.code in DIGIT_CODES && !e.repeat) {
+        const idx = DIGIT_CODES[e.code];
+        hotbar.selectSlot(idx);
+        // If the selected slot holds a spell, cast it.
+        const item = hotbar.getItem(idx);
+        if (item?.type === 'spell') spellSystem.tryCast(item.id);
         e.preventDefault();
         return;
     }
@@ -253,6 +275,7 @@ let prevTime = performance.now();
 
     if (controls.isLocked) {
         applyMovement(delta);
+        spellSystem.update(delta);
     }
 
     // Gentle water shimmer — oscillate opacity to mimic light on water.

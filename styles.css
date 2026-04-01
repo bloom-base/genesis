@@ -220,6 +220,69 @@ body {
     letter-spacing: 0.06em;
 }
 
+/* ── Mana bar — anchored just above the hotbar ──────────────────────────────── */
+
+#mana-bar-wrap {
+    position: absolute;
+    bottom: 92px; /* hotbar bottom (28) + slot height (50) + gap (14) */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    user-select: none;
+}
+
+#mana-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    color: rgba(100, 160, 255, 0.75);
+    text-transform: uppercase;
+}
+
+#mana-bar {
+    width: 190px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(100, 160, 255, 0.2);
+}
+
+#mana-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #3355ff, #88aaff);
+    border-radius: 3px;
+    transition: width 0.12s ease-out;
+}
+
+#mana-bar-fill.mana-flash {
+    background: linear-gradient(90deg, #ffe066, #fff5aa);
+    transition: none;
+}
+
+#mana-text {
+    font-size: 0.60rem;
+    color: rgba(120, 170, 255, 0.65);
+    letter-spacing: 0.05em;
+    min-width: 54px;
+    text-align: right;
+}
+
+/* Cooldown overlay — injected into spell slots; grows from bottom during cooldown. */
+.slot-cooldown {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0%;
+    background: rgba(0, 0, 0, 0.60);
+    pointer-events: none;
+    transition: none;
+}
+
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
