@@ -13,7 +13,14 @@ export class SolarSystemRenderer {
         this.centerY = 0;
         this.hoveredPlanet = null;
         this.animationTime = 0;
-        
+
+        /** Set of planets that match the current search query */
+        this.highlightedPlanets = new Set();
+
+        /** Camera pan offset in pixels (used to centre on a specific planet) */
+        this.cameraOffsetX = 0;
+        this.cameraOffsetY = 0;
+
         this.resize();
         window.addEventListener('resize', () => this.resize());
     }
@@ -30,8 +37,8 @@ export class SolarSystemRenderer {
      */
     toCanvasCoords(x, y) {
         return {
-            x: this.centerX + x * this.scale,
-            y: this.centerY + y * this.scale
+            x: this.centerX + x * this.scale + this.cameraOffsetX,
+            y: this.centerY + y * this.scale + this.cameraOffsetY
         };
     }
     
@@ -129,6 +136,40 @@ export class SolarSystemRenderer {
         const pos = this.getPlanetPosition(planet);
         const canvasPos = this.toCanvasCoords(pos.x, pos.y);
         const radius = planet.size / 2;
+
+        // --- Search highlight glow ---
+        // Drawn beneath the star-proximity glow so the warm tint still shows on top.
+        if (this.highlightedPlanets.has(planet)) {
+            const pulse = 0.5 + 0.5 * Math.sin(this.animationTime * 0.003);
+            const hlRadius = radius * (2.6 + pulse * 0.9);
+            const hlOpacity = 0.22 + pulse * 0.33;
+
+            const hlGrad = this.ctx.createRadialGradient(
+                canvasPos.x, canvasPos.y, radius * 0.5,
+                canvasPos.x, canvasPos.y, hlRadius
+            );
+            hlGrad.addColorStop(0, `rgba(100, 220, 255, ${hlOpacity.toFixed(3)})`);
+            hlGrad.addColorStop(1, 'rgba(100, 220, 255, 0)');
+
+            this.ctx.fillStyle = hlGrad;
+            this.ctx.beginPath();
+            this.ctx.arc(canvasPos.x, canvasPos.y, hlRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Bright cyan ring
+            const ringAlpha = (0.55 + pulse * 0.45).toFixed(3);
+            this.ctx.strokeStyle = `rgba(100, 220, 255, ${ringAlpha})`;
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(canvasPos.x, canvasPos.y, radius + 5, 0, Math.PI * 2);
+            this.ctx.stroke();
+
+            // Name label always visible while highlighted
+            this.ctx.fillStyle = 'rgba(140, 230, 255, 0.95)';
+            this.ctx.font = '13px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(planet.name, canvasPos.x, canvasPos.y - radius - 8);
+        }
 
         // --- Star proximity glow ---
         // A warm halo whose size and opacity intensify as the planet nears its star.
@@ -261,6 +302,32 @@ export class SolarSystemRenderer {
         this.canvas.style.cursor = this.hoveredPlanet ? 'pointer' : 'default';
     }
     
+    /**
+     * Update the set of planets that should be highlighted by the search feature.
+     * Pass an empty array (or call with no argument) to clear all highlights.
+     */
+    setSearchHighlights(planets = []) {
+        this.highlightedPlanets = new Set(planets);
+    }
+
+    /**
+     * Animate the camera to centre on the given planet's current position.
+     * The view snaps immediately (no tween) for simplicity.
+     */
+    centerCameraOn(planet) {
+        const pos = this.getPlanetPosition(planet);
+        this.cameraOffsetX = -pos.x * this.scale;
+        this.cameraOffsetY = -pos.y * this.scale;
+    }
+
+    /**
+     * Reset the camera back to the default centred-on-star position.
+     */
+    resetCamera() {
+        this.cameraOffsetX = 0;
+        this.cameraOffsetY = 0;
+    }
+
     /**
      * Render the complete scene
      */
