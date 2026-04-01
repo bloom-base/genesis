@@ -40,6 +40,9 @@ class App {
         // Setup event listeners
         this.setupEventListeners();
 
+        // Setup planet search
+        this.setupSearch();
+
         // Start animation loop
         this.lastTime = performance.now();
         this.animate();
@@ -126,6 +129,83 @@ class App {
                 this.tooltip.hide();
             }
         }, { passive: false });
+    }
+
+    /**
+     * Wire up the search input, clear button, and keyboard shortcuts.
+     */
+    setupSearch() {
+        const input = document.getElementById('planet-search');
+        const clearBtn = document.getElementById('search-clear');
+        const matchCount = document.createElement('span');
+        matchCount.className = 'search-match-count';
+        matchCount.hidden = true;
+        input.parentElement.insertBefore(matchCount, clearBtn);
+
+        input.addEventListener('input', () => {
+            const query = input.value.trim();
+            clearBtn.hidden = query.length === 0;
+            this._applySearch(query, matchCount);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this._clearSearch(input, clearBtn, matchCount);
+                input.blur();
+            } else if (e.key === 'Enter') {
+                const matches = this._getSearchMatches(input.value.trim());
+                if (matches.length > 0) {
+                    this.renderer.centerCameraOn(matches[0]);
+                }
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            this._clearSearch(input, clearBtn, matchCount);
+            input.focus();
+        });
+    }
+
+    /**
+     * Return planets whose name or type contains the query substring (case-insensitive).
+     */
+    _getSearchMatches(query) {
+        if (!query) return [];
+        const lower = query.toLowerCase();
+        return this.solarSystem.planets.filter(p =>
+            p.name.toLowerCase().includes(lower) ||
+            p.type.toLowerCase().includes(lower)
+        );
+    }
+
+    /**
+     * Apply a search query: highlight matched planets and update the match-count badge.
+     */
+    _applySearch(query, matchCountEl) {
+        if (!query) {
+            this.renderer.setSearchHighlights([]);
+            this.renderer.resetCamera();
+            matchCountEl.hidden = true;
+            return;
+        }
+
+        const matches = this._getSearchMatches(query);
+        this.renderer.setSearchHighlights(matches);
+
+        const total = this.solarSystem.planets.length;
+        matchCountEl.textContent = `${matches.length}/${total}`;
+        matchCountEl.hidden = false;
+    }
+
+    /**
+     * Clear search state: empty the input, remove highlights, reset camera.
+     */
+    _clearSearch(input, clearBtn, matchCountEl) {
+        input.value = '';
+        clearBtn.hidden = true;
+        matchCountEl.hidden = true;
+        this.renderer.setSearchHighlights([]);
+        this.renderer.resetCamera();
     }
 
     animate(currentTime = 0) {
