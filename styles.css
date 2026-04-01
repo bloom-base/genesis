@@ -134,6 +134,75 @@ body {
     user-select: none;
 }
 
+/* ── Hotbar ──────────────────────────────────────────────────────────────────── */
+
+#hotbar {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.hotbar-slot {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.52);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+/* Active slot — glowing cyan outline matching the title screen aesthetic */
+.hotbar-slot.active {
+    background: rgba(120, 210, 255, 0.14);
+    border-color: rgba(120, 210, 255, 0.85);
+    box-shadow:
+        0 0 10px rgba(120, 210, 255, 0.45),
+        inset 0 0 8px rgba(120, 210, 255, 0.1);
+}
+
+/* Slot number — top-left corner */
+.hotbar-key {
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.38);
+    letter-spacing: 0;
+}
+
+.hotbar-slot.active .hotbar-key {
+    color: rgba(120, 210, 255, 0.75);
+}
+
+/* Item/spell icon — centered in slot */
+.hotbar-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+/* Stack count — bottom-right corner */
+.hotbar-count {
+    position: absolute;
+    bottom: 3px;
+    right: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
 /* ── Footer ─────────────────────────────────────────────────────────────────── */
 
 #site-footer {

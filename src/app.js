@@ -10,6 +10,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { Sky } from 'three/addons/objects/Sky.js';
 import { createTerrain, createWater } from './terrain.js';
 import { createTrees } from './trees.js';
+import { createHotbar } from './hotbar.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -170,10 +171,29 @@ controls.addEventListener('unlock', () => {
     }
 });
 
+// ── Hotbar ────────────────────────────────────────────────────────────────────
+const hotbar = createHotbar();
+
 // ── Keyboard input ────────────────────────────────────────────────────────────
 const keys = new Set();
+
+// Map KeyboardEvent.code values for digits 1-9 to 0-based slot indices.
+const DIGIT_CODES = {
+    Digit1: 0, Digit2: 1, Digit3: 2,
+    Digit4: 3, Digit5: 4, Digit6: 5,
+    Digit7: 6, Digit8: 7, Digit9: 8,
+};
+
 document.addEventListener('keydown', (e) => {
     keys.add(e.code);
+
+    // Hotbar slot selection — only while actively playing.
+    if (controls.isLocked && e.code in DIGIT_CODES) {
+        hotbar.selectSlot(DIGIT_CODES[e.code]);
+        e.preventDefault();
+        return;
+    }
+
     // Prevent browser scroll / default on game keys while playing.
     if (controls.isLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.key)) {
         e.preventDefault();
