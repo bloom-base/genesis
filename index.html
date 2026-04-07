@@ -30,7 +30,8 @@
                     Shift&nbsp;·&nbsp;Sprint &nbsp;|&nbsp;
                     1–9&nbsp;·&nbsp;Hotbar &nbsp;|&nbsp;
                     I&nbsp;·&nbsp;Inventory &nbsp;|&nbsp;
-                    ESC&nbsp;·&nbsp;Pause
+                    ESC&nbsp;·&nbsp;Pause &nbsp;|&nbsp;
+                    Click&nbsp;·&nbsp;Cast Spell
                 </p>
             </div>
             <p id="paused-label">PAUSED — Click to resume</p>
@@ -45,6 +46,17 @@
 
             <!-- Briefly shown name of the selected hotbar item -->
             <div id="selected-item-name"></div>
+
+            <!-- Spell indicator — shown when active hotbar item is a spell -->
+            <div id="spell-indicator">
+                <span id="spell-icon">🔥</span>
+                <div class="spell-info">
+                    <div id="spell-name">Fireball</div>
+                    <div id="spell-cooldown-track">
+                        <div id="spell-cooldown-bar"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ── Inventory Panel ──────────────────────────────────────────────── -->

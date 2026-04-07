@@ -393,6 +393,70 @@ body {
     gap: 5px;
 }
 
+/* ── Spell indicator ────────────────────────────────────────────────────────── */
+
+#spell-indicator {
+    position: absolute;
+    bottom: 90px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(8, 12, 20, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 7px 14px 7px 10px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s, border-color 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Glow border when the spell is ready */
+#spell-indicator.spell-ready {
+    border-color: rgba(255, 200, 80, 0.5);
+    box-shadow: 0 0 12px rgba(255, 180, 40, 0.25);
+}
+
+#spell-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.spell-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 80px;
+}
+
+#spell-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: rgba(230, 230, 255, 0.9);
+    white-space: nowrap;
+}
+
+/* Cooldown bar track */
+#spell-cooldown-track {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* Cooldown fill — shrinks from full width to 0 as cooldown expires */
+#spell-cooldown-bar {
+    height: 100%;
+    width: 0%;
+    background: rgba(255, 100, 30, 0.85);
+    border-radius: 2px;
+    transition: width 0.05s linear;
+}
+
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {

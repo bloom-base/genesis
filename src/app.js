@@ -12,6 +12,7 @@ import { createTerrain, createWater } from './terrain.js';
 import { createTrees } from './trees.js';
 import { createInventorySystem } from './inventory.js';
 import { createInventoryUI } from './inventoryUI.js';
+import { createSpellSystem } from './spells.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -139,6 +140,11 @@ function findStartPosition(getHeight, seaLevel) {
 const invSystem = createInventorySystem();
 const inventoryUI = createInventoryUI(invSystem);
 
+// ── Spell system ───────────────────────────────────────────────────────────────
+const spellSystem = createSpellSystem(scene, camera, getHeight, seaLevel, invSystem);
+// Wire up collision targets — terrain + all three tree meshes
+spellSystem.setCollisionTargets([terrainMesh, ...treeMeshes]);
+
 let inventoryOpen = false; // true while the inventory panel is visible
 
 function openInventory() {
@@ -164,6 +170,12 @@ const pausedLabel = document.getElementById('paused-label');
 const hud         = document.getElementById('hud');
 const enterBtn    = document.getElementById('enter-btn');
 const panelEl     = document.getElementById('inventory-panel');
+
+// Spell HUD elements
+const spellIndicator   = document.getElementById('spell-indicator');
+const spellIconEl      = document.getElementById('spell-icon');
+const spellNameEl      = document.getElementById('spell-name');
+const spellCooldownBar = document.getElementById('spell-cooldown-bar');
 
 let inWorld = false; // true once the player has entered for the first time
 
@@ -249,6 +261,12 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('keyup', (e) => keys.delete(e.code));
 
+// ── Spell casting — left click while in-world ─────────────────────────────────
+document.addEventListener('mousedown', (e) => {
+    if (!controls.isLocked || inventoryOpen) return;
+    if (e.button === 0) spellSystem.cast();
+});
+
 // ── Movement helpers ──────────────────────────────────────────────────────────
 const moveDir = new THREE.Vector3();
 
@@ -279,6 +297,23 @@ function applyMovement(delta) {
     p.y += (targetY - p.y) * Math.min(1, 12 * delta); // spring constant
 }
 
+// ── Spell HUD updater ─────────────────────────────────────────────────────────
+function updateSpellHUD() {
+    const info = spellSystem.getCurrentSpellInfo();
+    if (!info) {
+        spellIndicator.style.opacity = '0';
+        return;
+    }
+    spellIndicator.style.opacity = '1';
+    spellIconEl.textContent      = info.icon;
+    spellNameEl.textContent      = info.name;
+
+    // Cooldown bar: full width = on cooldown, shrinks to 0 as it expires
+    const pct = Math.round(info.cooldownFraction * 100);
+    spellCooldownBar.style.width = `${pct}%`;
+    spellIndicator.classList.toggle('spell-ready', info.ready);
+}
+
 // ── Resize ────────────────────────────────────────────────────────────────────
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -301,7 +336,11 @@ let prevTime = performance.now();
 
     if (controls.isLocked) {
         applyMovement(delta);
+        updateSpellHUD();
     }
+
+    // Update spell projectiles & impacts every frame (handles cleanup too)
+    spellSystem.update(delta);
 
     // Gentle water shimmer — oscillate opacity to mimic light on water.
     waterMat.opacity = 0.72 + Math.sin(now * 0.0009) * 0.04;
