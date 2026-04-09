@@ -13,6 +13,7 @@ import { createTrees } from './trees.js';
 import { createInventorySystem } from './inventory.js';
 import { createInventoryUI } from './inventoryUI.js';
 import { createSpellSystem } from './spells.js';
+import { createDayNightCycle } from './daynight.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -53,28 +54,12 @@ const sky = new Sky();
 sky.scale.setScalar(10000);
 scene.add(sky);
 
-// Sun position — early-afternoon angle for nice directional shadows.
-const SUN_ELEVATION_DEG = 28;   // degrees above horizon
-const SUN_AZIMUTH_DEG   = 195;  // compass bearing
-
-const sunDir = new THREE.Vector3();
-sunDir.setFromSphericalCoords(
-    1,
-    THREE.MathUtils.degToRad(90 - SUN_ELEVATION_DEG),
-    THREE.MathUtils.degToRad(SUN_AZIMUTH_DEG)
-);
-
-const skyU = sky.material.uniforms;
-skyU['turbidity'].value        = 7;
-skyU['rayleigh'].value         = 1.8;
-skyU['mieCoefficient'].value   = 0.004;
-skyU['mieDirectionalG'].value  = 0.82;
-skyU['sunPosition'].value.copy(sunDir);
+// Sun position & sky parameters are now driven by the day/night cycle (daynight.js).
 
 // ── Lighting ──────────────────────────────────────────────────────────────────
 // Directional sunlight with shadows.
 const sunLight = new THREE.DirectionalLight(0xfff3d6, 2.2);
-sunLight.position.copy(sunDir).multiplyScalar(400);
+sunLight.position.set(0, 200, 0); // Initial position; driven by day/night cycle.
 sunLight.castShadow = true;
 
 const sc = sunLight.shadow.camera;
@@ -89,6 +74,7 @@ sunLight.shadow.mapSize.width  = 2048;
 sunLight.shadow.mapSize.height = 2048;
 sunLight.shadow.bias           = -0.0008;
 scene.add(sunLight);
+scene.add(sunLight.target); // target must be in scene for day/night shadow updates
 
 // Hemisphere light — sky colour from above, earth bounce from below.
 const hemiLight = new THREE.HemisphereLight(0x9bbdd6, 0x4a7a30, 0.9);
@@ -109,6 +95,18 @@ scene.add(water);
 
 const treeMeshes = createTrees(SEED, getHeight, seaLevel);
 treeMeshes.forEach(m => scene.add(m));
+
+// ── Day/Night Cycle ──────────────────────────────────────────────────────────
+const dayNight = createDayNightCycle({
+    sky,
+    sunLight,
+    hemiLight,
+    ambientLight,
+    fog: scene.fog,
+    renderer,
+    scene,
+    startHour: 10,          // Start at 10 AM for a pleasant first impression.
+});
 
 // ── Player / Controls ─────────────────────────────────────────────────────────
 const PLAYER_EYE_HEIGHT = 1.72; // metres above ground
@@ -341,6 +339,9 @@ let prevTime = performance.now();
 
     // Update spell projectiles & impacts every frame (handles cleanup too)
     spellSystem.update(delta);
+
+    // Advance the day/night cycle — updates sky, lighting, fog, and HUD clock.
+    dayNight.update(delta, camera);
 
     // Gentle water shimmer — oscillate opacity to mimic light on water.
     waterMat.opacity = 0.72 + Math.sin(now * 0.0009) * 0.04;
