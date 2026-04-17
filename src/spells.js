@@ -7,6 +7,7 @@
 
 import * as THREE from 'three';
 import { CATEGORIES } from './items.js';
+import { playSpellCast, playSpellImpact } from './audio.js';
 
 // ── Spell configs (one per item id) ─────────────────────────────────────────
 
@@ -123,6 +124,9 @@ export function createSpellSystem(scene, camera, getHeight, seaLevel, invSystem)
         if (isOnCooldown(spellId)) return false;
 
         cooldowns[spellId] = cfg.cooldown;
+
+        // Audio feedback
+        playSpellCast(spellId);
 
         // Direction the player is looking
         const dir = new THREE.Vector3();
@@ -258,6 +262,7 @@ export function createSpellSystem(scene, camera, getHeight, seaLevel, invSystem)
         proj.trail.material.dispose();
 
         if (hitPos) {
+            playSpellImpact(proj.spellId);
             activeImpacts.push(spawnImpact(hitPos, proj.config));
         }
     }
