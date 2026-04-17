@@ -11,6 +11,7 @@
 
 import { CATEGORIES, getItem } from './items.js';
 import { HOTBAR_SIZE, INVENTORY_SIZE } from './inventory.js';
+import { playItemMoveSound } from './audio.js';
 
 // ── Rarity colour map ─────────────────────────────────────────────────────────
 const RARITY_BORDER = {
@@ -80,6 +81,7 @@ export function createInventoryUI(invSystem) {
         if (!dragState) return;
         if (dragState.zone === zone && dragState.index === index) return;
         invSystem.moveItem(dragState.zone, dragState.index, zone, index);
+        playItemMoveSound();
         dragState = null;
     }
 

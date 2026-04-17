@@ -14,6 +14,7 @@ import { createInventorySystem } from './inventory.js';
 import { createInventoryUI } from './inventoryUI.js';
 import { createSpellSystem } from './spells.js';
 import { createDayNightCycle } from './daynight.js';
+import { initAudio, updateFootsteps, playInventoryToggle, playSelectSound } from './audio.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -147,11 +148,13 @@ let inventoryOpen = false; // true while the inventory panel is visible
 
 function openInventory() {
     inventoryOpen = true;
+    playInventoryToggle(true);
     controls.unlock(); // releases pointer lock; the 'unlock' handler shows the panel
 }
 
 function closeInventory() {
     inventoryOpen = false;
+    playInventoryToggle(false);
     inventoryUI.close();
     // Hide any lingering overlay then immediately try to re-lock.
     // If re-lock succeeds the 'lock' event will restore HUD.
@@ -178,6 +181,7 @@ const spellCooldownBar = document.getElementById('spell-cooldown-bar');
 let inWorld = false; // true once the player has entered for the first time
 
 function enterWorld() {
+    initAudio(); // Must be called from a user gesture for browser autoplay policy
     controls.lock();
 }
 
@@ -246,6 +250,7 @@ document.addEventListener('keydown', (e) => {
         const digit = parseInt(e.key, 10);
         if (digit >= 1 && digit <= 9) {
             invSystem.selectHotbarSlot(digit - 1);
+            playSelectSound();
             return;
         }
     }
@@ -278,11 +283,16 @@ function applyMovement(delta) {
     if (keys.has('KeyA') || keys.has('ArrowLeft'))  moveDir.x -= 1;
     if (keys.has('KeyD') || keys.has('ArrowRight')) moveDir.x += 1;
 
-    if (moveDir.lengthSq() > 0) {
+    const isMoving = moveDir.lengthSq() > 0;
+
+    if (isMoving) {
         moveDir.normalize();
         controls.moveForward(-moveDir.z * speed * delta);
         controls.moveRight(moveDir.x * speed * delta);
     }
+
+    // Audio: trigger footstep sounds at walk/sprint cadence
+    updateFootsteps(delta, isMoving, sprint);
 
     // Clamp to world boundary — keeps the player from walking off terrain edge.
     const p = camera.position;
