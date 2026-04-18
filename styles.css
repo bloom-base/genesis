@@ -415,6 +415,71 @@ body {
     gap: 5px;
 }
 
+/* ── Pickup toast notifications ─────────────────────────────────────────────── */
+
+#pickup-toasts {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.pickup-toast {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(8, 12, 20, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 5px 14px 5px 10px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.pickup-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.pickup-toast.hide {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+    transition: opacity 0.35s ease-in, transform 0.35s ease-in;
+}
+
+/* Rarity tint on toast border */
+.pickup-toast.rarity-common    { border-color: rgba(157,157,157,0.45); }
+.pickup-toast.rarity-uncommon  { border-color: rgba(30,255,0,0.5); }
+.pickup-toast.rarity-rare      { border-color: rgba(0,112,221,0.6); }
+.pickup-toast.rarity-epic      { border-color: rgba(163,53,238,0.65); }
+.pickup-toast.rarity-legendary {
+    border-color: rgba(255,128,0,0.75);
+    box-shadow: 0 0 10px rgba(255,128,0,0.25);
+}
+
+.pickup-toast-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.pickup-toast-text {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(230, 240, 255, 0.92);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+}
+
 /* ── Spell indicator ────────────────────────────────────────────────────────── */
 
 #spell-indicator {

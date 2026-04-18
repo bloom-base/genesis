@@ -14,7 +14,8 @@ import { createInventorySystem } from './inventory.js';
 import { createInventoryUI } from './inventoryUI.js';
 import { createSpellSystem } from './spells.js';
 import { createDayNightCycle } from './daynight.js';
-import { initAudio, updateFootsteps, playInventoryToggle, playSelectSound } from './audio.js';
+import { initAudio, updateFootsteps, playInventoryToggle, playSelectSound, playPickupSound } from './audio.js';
+import { createGroundItemSystem } from './groundItems.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -143,6 +144,38 @@ const inventoryUI = createInventoryUI(invSystem);
 const spellSystem = createSpellSystem(scene, camera, getHeight, seaLevel, invSystem);
 // Wire up collision targets — terrain + all three tree meshes
 spellSystem.setCollisionTargets([terrainMesh, ...treeMeshes]);
+
+// ── Pickup toast notifications ───────────────────────────────────────────────
+const toastContainer = document.getElementById('pickup-toasts');
+
+/**
+ * Show a brief toast notification when an item is collected.
+ * @param {object} itemDef  item definition from items.js
+ * @param {number} count    how many were collected
+ */
+function showPickupToast(itemDef, count) {
+    const toast = document.createElement('div');
+    toast.className = `pickup-toast rarity-${itemDef.rarity}`;
+    toast.innerHTML = `<span class="pickup-toast-icon">${itemDef.icon}</span>`
+        + `<span class="pickup-toast-text">+${count} ${itemDef.name}</span>`;
+    toastContainer.appendChild(toast);
+
+    // Trigger enter animation next frame
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    // Remove after 2.2 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 400);
+    }, 2200);
+}
+
+// ── Ground items ─────────────────────────────────────────────────────────────
+const groundItems = createGroundItemSystem(scene, getHeight, seaLevel, invSystem, {
+    playPickupSound,
+    showPickupToast,
+});
 
 let inventoryOpen = false; // true while the inventory panel is visible
 
@@ -349,6 +382,9 @@ let prevTime = performance.now();
 
     // Update spell projectiles & impacts every frame (handles cleanup too)
     spellSystem.update(delta);
+
+    // Update ground items — pickup detection, hover animation, effects
+    groundItems.update(delta, camera.position);
 
     // Advance the day/night cycle — updates sky, lighting, fog, and HUD clock.
     dayNight.update(delta, camera);
