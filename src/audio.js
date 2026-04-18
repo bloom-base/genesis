@@ -356,6 +356,71 @@ export function playInventoryToggle(opening) {
     osc.stop(t + 0.12);
 }
 
+// ── Item pickup sound ────────────────────────────────────────────────────
+
+/**
+ * Subtle 'whoosh' sound when an item is collected from the ground.
+ * Rising sweep + soft noise burst for a satisfying pickup feel.
+ */
+export function playPickupSound() {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+
+    // Rising shimmer tone
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(1400, t + 0.12);
+
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.09, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+    osc.connect(oscGain);
+    oscGain.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + 0.20);
+
+    // Second harmonic for richness
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(900, t);
+    osc2.frequency.exponentialRampToValueAtTime(1800, t + 0.10);
+
+    const osc2Gain = ctx.createGain();
+    osc2Gain.gain.setValueAtTime(0.04, t);
+    osc2Gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+    osc2.connect(osc2Gain);
+    osc2Gain.connect(masterGain);
+    osc2.start(t);
+    osc2.stop(t + 0.16);
+
+    // Soft noise whoosh layer
+    const nLen = Math.floor(ctx.sampleRate * 0.15);
+    const buf  = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d    = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) d[i] = (Math.random() * 2 - 1);
+
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const flt = ctx.createBiquadFilter();
+    flt.type = 'bandpass';
+    flt.frequency.value = 2000;
+    flt.Q.value = 0.6;
+
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.05, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+    src.connect(flt);
+    flt.connect(ng);
+    ng.connect(masterGain);
+    src.start(t);
+    src.stop(t + 0.18);
+}
+
 // ── Ambient wind (very subtle background) ────────────────────────────────────
 
 let windSource = null;
