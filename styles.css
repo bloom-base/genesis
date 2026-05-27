@@ -216,15 +216,122 @@ body {
                   inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-/* Rarity border tints */
-.inv-slot.rarity-common    { border-color: rgba(157,157,157,0.5); }
-.inv-slot.rarity-uncommon  { border-color: rgba(30,255,0,0.55);  }
-.inv-slot.rarity-rare      { border-color: rgba(0,112,221,0.65); }
-.inv-slot.rarity-epic      { border-color: rgba(163,53,238,0.75); }
+/* ── Rarity visual tiers ────────────────────────────────────────────────────── */
+
+/* Common — subtle neutral */
+.inv-slot.rarity-common {
+    border-color: rgba(157,157,157,0.5);
+}
+
+/* Uncommon — soft green glow */
+.inv-slot.rarity-uncommon {
+    border-color: rgba(30,255,0,0.55);
+}
+
+/* Rare — blue glow halo */
+.inv-slot.rarity-rare {
+    border-color: rgba(0,112,221,0.7);
+    box-shadow:   0 0 8px rgba(0,112,221,0.3),
+                  inset 0 1px 0 rgba(0,112,221,0.08);
+}
+
+/* Epic — purple glow halo */
+.inv-slot.rarity-epic {
+    border-color: rgba(163,53,238,0.8);
+    box-shadow:   0 0 12px rgba(163,53,238,0.35),
+                  inset 0 1px 0 rgba(163,53,238,0.1);
+}
+
+/* Legendary — orange glow halo + pulse animation */
 .inv-slot.rarity-legendary {
-    border-color: rgba(255,128,0,0.85);
-    box-shadow:   0 0 10px rgba(255,128,0,0.35),
-                  inset 0 1px 0 rgba(255,255,255,0.08);
+    border-color: rgba(255,128,0,0.9);
+    box-shadow:   0 0 14px rgba(255,128,0,0.4),
+                  0 0 4px  rgba(255,128,0,0.2),
+                  inset 0 1px 0 rgba(255,255,255,0.1);
+    animation: legendary-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes legendary-pulse {
+    0%, 100% {
+        box-shadow: 0 0 14px rgba(255,128,0,0.4),
+                    0 0 4px  rgba(255,128,0,0.2),
+                    inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255,128,0,0.55),
+                    0 0 8px  rgba(255,128,0,0.3),
+                    inset 0 1px 0 rgba(255,255,255,0.14);
+    }
+}
+
+/* ── Custom rarity tooltip ──────────────────────────────────────────────────── */
+
+.slot-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(6, 10, 18, 0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 140px;
+    max-width: 220px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    white-space: normal;
+}
+
+.inv-slot:hover .slot-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltip rarity border accent */
+.slot-tooltip.rarity-common    { border-color: rgba(157,157,157,0.35); }
+.slot-tooltip.rarity-uncommon  { border-color: rgba(30,255,0,0.4); }
+.slot-tooltip.rarity-rare      { border-color: rgba(0,112,221,0.5); }
+.slot-tooltip.rarity-epic      { border-color: rgba(163,53,238,0.55); }
+.slot-tooltip.rarity-legendary {
+    border-color: rgba(255,128,0,0.6);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 12px rgba(255,128,0,0.15);
+}
+
+.tooltip-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+}
+
+.tooltip-rarity {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.tooltip-category {
+    font-size: 0.6rem;
+    color: rgba(180,200,230,0.55);
+    letter-spacing: 0.06em;
+    line-height: 1;
+}
+
+.tooltip-desc {
+    font-size: 0.62rem;
+    color: rgba(200,210,230,0.7);
+    line-height: 1.35;
+    margin-top: 3px;
 }
 
 /* Drag states */

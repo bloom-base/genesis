@@ -9,18 +9,9 @@
  * inventory ↔ hotbar, hotbar ↔ hotbar).
  */
 
-import { CATEGORIES, getItem } from './items.js';
+import { CATEGORIES, getItem, RARITY_COLORS } from './items.js';
 import { HOTBAR_SIZE, INVENTORY_SIZE } from './inventory.js';
 import { playItemMoveSound } from './audio.js';
-
-// ── Rarity colour map ─────────────────────────────────────────────────────────
-const RARITY_BORDER = {
-    common:    'rgba(157,157,157,0.55)',
-    uncommon:  'rgba(30,255,0,0.55)',
-    rare:      'rgba(0,112,221,0.65)',
-    epic:      'rgba(163,53,238,0.75)',
-    legendary: 'rgba(255,128,0,0.85)',
-};
 
 // ── Category tab config ───────────────────────────────────────────────────────
 const TABS = [
@@ -116,8 +107,16 @@ export function createInventoryUI(invSystem) {
         if (slotData) {
             const def = getItem(slotData.itemId);
             if (def) {
+                const rc = RARITY_COLORS[def.rarity];
+
                 el.classList.add(`rarity-${def.rarity}`);
                 el.draggable = true;
+
+                // Apply rarity background tint
+                if (rc) {
+                    el.style.background =
+                        `radial-gradient(ellipse at center, ${rc.hex}18 0%, ${rc.hex}08 60%, transparent 100%), rgba(8,12,20,0.72)`;
+                }
 
                 // Icon
                 const iconEl = document.createElement('span');
@@ -133,10 +132,18 @@ export function createInventoryUI(invSystem) {
                     el.appendChild(countEl);
                 }
 
-                // Native tooltip
-                const rarityLabel    = def.rarity.charAt(0).toUpperCase()    + def.rarity.slice(1);
-                const categoryLabel  = def.category.charAt(0).toUpperCase()  + def.category.slice(1);
-                el.title = `${def.name}\n${rarityLabel} · ${categoryLabel}\n${def.description}`;
+                // Custom rarity tooltip
+                const rarityLabel   = rc ? rc.label : def.rarity;
+                const categoryLabel = def.category.charAt(0).toUpperCase() + def.category.slice(1);
+
+                const tooltip = document.createElement('div');
+                tooltip.className = `slot-tooltip rarity-${def.rarity}`;
+                tooltip.innerHTML =
+                    `<span class="tooltip-name" style="color:${rc ? rc.hex : '#fff'}">${def.name}</span>` +
+                    `<span class="tooltip-rarity" style="color:${rc ? rc.hex : '#ccc'}">${rarityLabel}</span>` +
+                    `<span class="tooltip-category">${categoryLabel}</span>` +
+                    `<span class="tooltip-desc">${def.description}</span>`;
+                el.appendChild(tooltip);
 
                 el.addEventListener('dragstart', (e) => onDragStart(zone, index, e));
                 el.addEventListener('dragend',   onDragEnd);
