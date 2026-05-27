@@ -21,6 +21,31 @@ export const RARITIES = {
 };
 
 /**
+ * Visual colour definitions for each rarity tier.
+ *
+ * • hex    — canonical colour used for borders, text, and glow
+ * • label  — display name shown in tooltips
+ * • order  — sort weight (higher = rarer)
+ * • glow   — whether the slot gets an ambient glow effect
+ */
+export const RARITY_COLORS = {
+    common:    { hex: '#9d9d9d', label: 'Common',    order: 0, glow: false },
+    uncommon:  { hex: '#1eff00', label: 'Uncommon',  order: 1, glow: false },
+    rare:      { hex: '#0070dd', label: 'Rare',      order: 2, glow: true  },
+    epic:      { hex: '#a335ee', label: 'Epic',      order: 3, glow: true  },
+    legendary: { hex: '#ff8000', label: 'Legendary', order: 4, glow: true  },
+};
+
+/**
+ * Look up the colour definition for a rarity string.
+ * @param {string} rarity
+ * @returns {{ hex: string, label: string, order: number, glow: boolean } | null}
+ */
+export function getRarityColor(rarity) {
+    return RARITY_COLORS[rarity] ?? null;
+}
+
+/**
  * @typedef {{
  *   id:          string,
  *   name:        string,
