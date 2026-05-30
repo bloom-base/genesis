@@ -55,6 +55,7 @@ export function getRarityColor(rarity) {
  *   stackable:   boolean,
  *   maxStack?:   number,
  *   description: string,
+ *   properties?: Array<{ label: string, value: string }>,
  * }} ItemDef
  */
 
@@ -68,24 +69,28 @@ export const ITEMS = {
         category: CATEGORIES.WEAPON, rarity: RARITIES.COMMON,
         stackable: false,
         description: 'A reliable iron blade forged by a village smith.',
+        properties: [{ label: 'Damage', value: '8' }, { label: 'Speed', value: 'Normal' }],
     },
     elven_bow: {
         id: 'elven_bow', name: 'Elven Bow', icon: '🏹',
         category: CATEGORIES.WEAPON, rarity: RARITIES.UNCOMMON,
         stackable: false,
         description: 'A graceful bow carved from ancient silverwood.',
+        properties: [{ label: 'Damage', value: '12' }, { label: 'Range', value: 'Long' }],
     },
     shadow_dagger: {
         id: 'shadow_dagger', name: 'Shadow Dagger', icon: '🗡️',
         category: CATEGORIES.WEAPON, rarity: RARITIES.RARE,
         stackable: false,
         description: 'A blade that drinks in darkness.',
+        properties: [{ label: 'Damage', value: '15' }, { label: 'Speed', value: 'Fast' }, { label: 'Effect', value: 'Stealth bonus' }],
     },
     dragon_lance: {
         id: 'dragon_lance', name: 'Dragon Lance', icon: '🔱',
         category: CATEGORIES.WEAPON, rarity: RARITIES.LEGENDARY,
         stackable: false,
         description: 'Forged from the spine of an ancient dragon.',
+        properties: [{ label: 'Damage', value: '35' }, { label: 'Speed', value: 'Slow' }, { label: 'Effect', value: 'Fire damage' }],
     },
 
     // ── Consumables ──────────────────────────────────────────────────────────
@@ -95,36 +100,42 @@ export const ITEMS = {
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.COMMON,
         stackable: true, maxStack: 99,
         description: 'Restores health when consumed.',
+        properties: [{ label: 'Restores', value: '+50 HP' }, { label: 'Use time', value: 'Instant' }],
     },
     mana_potion: {
         id: 'mana_potion', name: 'Mana Potion', icon: '💙',
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.COMMON,
         stackable: true, maxStack: 99,
         description: 'Restores mana when consumed.',
+        properties: [{ label: 'Restores', value: '+40 MP' }, { label: 'Use time', value: 'Instant' }],
     },
     bread: {
         id: 'bread', name: 'Bread', icon: '🍞',
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.COMMON,
         stackable: true, maxStack: 20,
         description: 'A simple loaf. Restores a bit of stamina.',
+        properties: [{ label: 'Restores', value: '+15 Stamina' }],
     },
     mushroom: {
         id: 'mushroom', name: 'Forest Mushroom', icon: '🍄',
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.COMMON,
         stackable: true, maxStack: 30,
         description: 'Found growing in dark glades. Mildly restorative.',
+        properties: [{ label: 'Restores', value: '+10 HP' }],
     },
     golden_apple: {
         id: 'golden_apple', name: 'Golden Apple', icon: '🍎',
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.EPIC,
         stackable: true, maxStack: 5,
         description: 'Imbued with ancient magic. Greatly restores health.',
+        properties: [{ label: 'Restores', value: '+200 HP' }, { label: 'Effect', value: 'Regeneration 30s' }],
     },
     torch: {
         id: 'torch', name: 'Torch', icon: '🔦',
         category: CATEGORIES.CONSUMABLE, rarity: RARITIES.COMMON,
         stackable: true, maxStack: 16,
         description: 'Lights the way in dark caverns.',
+        properties: [{ label: 'Duration', value: '5 minutes' }, { label: 'Range', value: '8 blocks' }],
     },
 
     // ── Materials ─────────────────────────────────────────────────────────────
@@ -152,18 +163,21 @@ export const ITEMS = {
         category: CATEGORIES.MATERIAL, rarity: RARITIES.RARE,
         stackable: true, maxStack: 32,
         description: 'A fragment of pure magical energy.',
+        properties: [{ label: 'Used in', value: 'Enchanting' }],
     },
     moonstone: {
         id: 'moonstone', name: 'Moonstone', icon: '🌙',
         category: CATEGORIES.MATERIAL, rarity: RARITIES.EPIC,
         stackable: true, maxStack: 16,
         description: 'Only falls during lunar eclipses.',
+        properties: [{ label: 'Used in', value: 'Lunar crafting' }, { label: 'Source', value: 'Lunar eclipse' }],
     },
     stardust: {
         id: 'stardust', name: 'Stardust', icon: '✨',
         category: CATEGORIES.MATERIAL, rarity: RARITIES.LEGENDARY,
         stackable: true, maxStack: 8,
         description: 'Harvested from fallen stars. Impossibly rare.',
+        properties: [{ label: 'Used in', value: 'Legendary crafting' }, { label: 'Source', value: 'Fallen stars' }],
     },
 
     // ── Spells ────────────────────────────────────────────────────────────────
@@ -173,30 +187,35 @@ export const ITEMS = {
         category: CATEGORIES.SPELL, rarity: RARITIES.UNCOMMON,
         stackable: false,
         description: 'Hurls a blazing sphere at your enemies.',
+        properties: [{ label: 'Damage', value: '25 Fire' }, { label: 'Mana cost', value: '15 MP' }],
     },
     frost_bolt: {
         id: 'frost_bolt', name: 'Frost Bolt', icon: '❄️',
         category: CATEGORIES.SPELL, rarity: RARITIES.UNCOMMON,
         stackable: false,
         description: 'A lance of ice that slows whatever it hits.',
+        properties: [{ label: 'Damage', value: '18 Ice' }, { label: 'Mana cost', value: '12 MP' }, { label: 'Effect', value: 'Slow 3s' }],
     },
     lightning: {
         id: 'lightning', name: 'Lightning Strike', icon: '⚡',
         category: CATEGORIES.SPELL, rarity: RARITIES.RARE,
         stackable: false,
         description: 'Calls a bolt from a clear sky.',
+        properties: [{ label: 'Damage', value: '40 Lightning' }, { label: 'Mana cost', value: '25 MP' }, { label: 'Effect', value: 'Chain to 3 targets' }],
     },
     nature_call: {
         id: 'nature_call', name: "Nature's Call", icon: '🌿',
         category: CATEGORIES.SPELL, rarity: RARITIES.UNCOMMON,
         stackable: false,
         description: 'Commune with the living forest.',
+        properties: [{ label: 'Mana cost', value: '20 MP' }, { label: 'Effect', value: 'Summon treant ally' }],
     },
     void_rift: {
         id: 'void_rift', name: 'Void Rift', icon: '🌀',
         category: CATEGORIES.SPELL, rarity: RARITIES.LEGENDARY,
         stackable: false,
         description: 'Tears a hole in the fabric of reality.',
+        properties: [{ label: 'Damage', value: '80 Void' }, { label: 'Mana cost', value: '50 MP' }, { label: 'Effect', value: 'AoE gravity pull' }],
     },
 
     // ── Tools ─────────────────────────────────────────────────────────────────
@@ -218,12 +237,14 @@ export const ITEMS = {
         category: CATEGORIES.TOOL, rarity: RARITIES.UNCOMMON,
         stackable: false,
         description: 'Always points toward something interesting.',
+        properties: [{ label: 'Effect', value: 'Reveals POIs' }],
     },
     map_fragment: {
         id: 'map_fragment', name: 'Map Fragment', icon: '🗺️',
         category: CATEGORIES.TOOL, rarity: RARITIES.UNCOMMON,
         stackable: true, maxStack: 9,
         description: 'Piece together nine to reveal a hidden location.',
+        properties: [{ label: 'Collect', value: '9 to complete' }],
     },
 };
 
