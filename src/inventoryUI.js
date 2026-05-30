@@ -7,6 +7,9 @@
  *
  * Drag-and-drop works between every slot pair (inventory ↔ inventory,
  * inventory ↔ hotbar, hotbar ↔ hotbar).
+ *
+ * Hovering an occupied slot shows a cursor-following tooltip with the item's
+ * name, rarity, category, description, and any special properties.
  */
 
 import { CATEGORIES, getItem, RARITY_COLORS } from './items.js';
@@ -22,6 +25,10 @@ const TABS = [
     { id: CATEGORIES.SPELL,         label: '✨', title: 'Spells'     },
     { id: CATEGORIES.TOOL,          label: '⚙️', title: 'Tools'      },
 ];
+
+// ── Tooltip offset from cursor (px) ──────────────────────────────────────────
+const TOOLTIP_OFFSET_X = 14;
+const TOOLTIP_OFFSET_Y = 14;
 
 // ── Factory ───────────────────────────────────────────────────────────────────
 
@@ -44,6 +51,92 @@ export function createInventoryUI(invSystem) {
     /** @type {{ zone: 'inventory'|'hotbar', index: number } | null} */
     let dragState = null;
 
+    // ── Floating tooltip ────────────────────────────────────────────────────
+
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = 'floating-tooltip';
+    tooltipEl.setAttribute('role', 'tooltip');
+    document.body.appendChild(tooltipEl);
+
+    /** Currently hovered item id (null = hidden) */
+    let tooltipItemId = null;
+
+    /**
+     * Position the floating tooltip near the cursor, clamped to the viewport.
+     * @param {number} clientX
+     * @param {number} clientY
+     */
+    function positionTooltip(clientX, clientY) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const tw = tooltipEl.offsetWidth;
+        const th = tooltipEl.offsetHeight;
+
+        // Default: bottom-right of cursor
+        let x = clientX + TOOLTIP_OFFSET_X;
+        let y = clientY + TOOLTIP_OFFSET_Y;
+
+        // Flip left if it would overflow the right edge
+        if (x + tw > vw - 4) x = clientX - tw - TOOLTIP_OFFSET_X;
+        // Flip up if it would overflow the bottom
+        if (y + th > vh - 4) y = clientY - th - TOOLTIP_OFFSET_Y;
+
+        // Clamp to viewport
+        x = Math.max(4, Math.min(x, vw - tw - 4));
+        y = Math.max(4, Math.min(y, vh - th - 4));
+
+        tooltipEl.style.left = `${x}px`;
+        tooltipEl.style.top  = `${y}px`;
+    }
+
+    /**
+     * Show the floating tooltip for a given item.
+     * @param {import('./items.js').ItemDef} def
+     * @param {number} count
+     * @param {number} clientX
+     * @param {number} clientY
+     */
+    function showTooltip(def, count, clientX, clientY) {
+        const rc = RARITY_COLORS[def.rarity];
+        const rarityLabel   = rc ? rc.label : def.rarity;
+        const categoryLabel = def.category.charAt(0).toUpperCase() + def.category.slice(1);
+        const colorHex      = rc ? rc.hex : '#fff';
+
+        // Reset classes — keep only base + rarity
+        tooltipEl.className = `floating-tooltip rarity-${def.rarity}`;
+
+        let html =
+            `<span class="tooltip-name" style="color:${colorHex}">${def.name}</span>` +
+            `<span class="tooltip-rarity" style="color:${colorHex}">${rarityLabel}</span>` +
+            `<span class="tooltip-category">${categoryLabel}</span>` +
+            `<span class="tooltip-desc">${def.description}</span>`;
+
+        // Special properties
+        if (def.properties && def.properties.length > 0) {
+            html += '<div class="tooltip-props">';
+            for (const prop of def.properties) {
+                html += `<span class="tooltip-prop"><span class="prop-label">${prop.label}:</span> <span class="prop-value">${prop.value}</span></span>`;
+            }
+            html += '</div>';
+        }
+
+        // Stack info for stackable items
+        if (def.stackable && count > 1) {
+            const max = def.maxStack || 99;
+            html += `<span class="tooltip-stack">${count} / ${max}</span>`;
+        }
+
+        tooltipEl.innerHTML = html;
+        tooltipEl.classList.add('visible');
+        tooltipItemId = def.id;
+        positionTooltip(clientX, clientY);
+    }
+
+    function hideTooltip() {
+        tooltipEl.classList.remove('visible');
+        tooltipItemId = null;
+    }
+
     // ── Drag helpers ──────────────────────────────────────────────────────────
 
     function onDragStart(zone, index, e) {
@@ -54,6 +147,7 @@ export function createInventoryUI(invSystem) {
         dragState = { zone, index };
         e.dataTransfer.effectAllowed = 'move';
         e.currentTarget.classList.add('dragging');
+        hideTooltip();
     }
 
     function onDragOver(e) {
@@ -80,6 +174,29 @@ export function createInventoryUI(invSystem) {
         e.currentTarget.classList.remove('dragging');
         document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         dragState = null;
+    }
+
+    // ── Slot hover handlers ─────────────────────────────────────────────────
+
+    function onSlotMouseEnter(zone, index, e) {
+        if (dragState) return; // no tooltip while dragging
+        const slotData = zone === 'hotbar'
+            ? invSystem.hotbar[index]
+            : invSystem.inventory[index];
+        if (!slotData) return;
+        const def = getItem(slotData.itemId);
+        if (!def) return;
+        showTooltip(def, slotData.count, e.clientX, e.clientY);
+    }
+
+    function onSlotMouseMove(e) {
+        if (tooltipItemId) {
+            positionTooltip(e.clientX, e.clientY);
+        }
+    }
+
+    function onSlotMouseLeave() {
+        hideTooltip();
     }
 
     // ── Slot builder ──────────────────────────────────────────────────────────
@@ -132,19 +249,12 @@ export function createInventoryUI(invSystem) {
                     el.appendChild(countEl);
                 }
 
-                // Custom rarity tooltip
-                const rarityLabel   = rc ? rc.label : def.rarity;
-                const categoryLabel = def.category.charAt(0).toUpperCase() + def.category.slice(1);
+                // Hover tooltip handlers
+                el.addEventListener('mouseenter', (e) => onSlotMouseEnter(zone, index, e));
+                el.addEventListener('mousemove',  onSlotMouseMove);
+                el.addEventListener('mouseleave', onSlotMouseLeave);
 
-                const tooltip = document.createElement('div');
-                tooltip.className = `slot-tooltip rarity-${def.rarity}`;
-                tooltip.innerHTML =
-                    `<span class="tooltip-name" style="color:${rc ? rc.hex : '#fff'}">${def.name}</span>` +
-                    `<span class="tooltip-rarity" style="color:${rc ? rc.hex : '#ccc'}">${rarityLabel}</span>` +
-                    `<span class="tooltip-category">${categoryLabel}</span>` +
-                    `<span class="tooltip-desc">${def.description}</span>`;
-                el.appendChild(tooltip);
-
+                // Drag handlers
                 el.addEventListener('dragstart', (e) => onDragStart(zone, index, e));
                 el.addEventListener('dragend',   onDragEnd);
             }
@@ -252,6 +362,7 @@ export function createInventoryUI(invSystem) {
     // ── Subscribe to state ────────────────────────────────────────────────────
 
     invSystem.on(() => {
+        hideTooltip();              // clear stale tooltip on state change
         renderHotbar();
         updateSelectedItemName();
         if (isOpen()) {
@@ -280,6 +391,7 @@ export function createInventoryUI(invSystem) {
 
     function close() {
         panelEl.style.display = 'none';
+        hideTooltip();
     }
 
     return { open, close, isOpen };

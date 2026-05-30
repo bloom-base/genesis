@@ -264,49 +264,49 @@ body {
     }
 }
 
-/* ── Custom rarity tooltip ──────────────────────────────────────────────────── */
+/* ── Floating cursor-following tooltip ──────────────────────────────────────── */
 
-.slot-tooltip {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
+.floating-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background: rgba(6, 10, 18, 0.95);
+    background: rgba(6, 10, 18, 0.96);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 8px;
-    padding: 8px 12px;
-    min-width: 140px;
-    max-width: 220px;
+    padding: 10px 14px;
+    min-width: 160px;
+    max-width: 240px;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    z-index: 50;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    transform: translateY(4px);
+    transition: opacity 0.14s ease, transform 0.14s ease;
+    z-index: 9999;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.7), 0 0 1px rgba(255,255,255,0.1);
     white-space: normal;
 }
 
-.inv-slot:hover .slot-tooltip {
+.floating-tooltip.visible {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 /* Tooltip rarity border accent */
-.slot-tooltip.rarity-common    { border-color: rgba(157,157,157,0.35); }
-.slot-tooltip.rarity-uncommon  { border-color: rgba(30,255,0,0.4); }
-.slot-tooltip.rarity-rare      { border-color: rgba(0,112,221,0.5); }
-.slot-tooltip.rarity-epic      { border-color: rgba(163,53,238,0.55); }
-.slot-tooltip.rarity-legendary {
+.floating-tooltip.rarity-common    { border-color: rgba(157,157,157,0.35); }
+.floating-tooltip.rarity-uncommon  { border-color: rgba(30,255,0,0.4); }
+.floating-tooltip.rarity-rare      { border-color: rgba(0,112,221,0.5); }
+.floating-tooltip.rarity-epic      { border-color: rgba(163,53,238,0.55); }
+.floating-tooltip.rarity-legendary {
     border-color: rgba(255,128,0,0.6);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 12px rgba(255,128,0,0.15);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.7), 0 0 14px rgba(255,128,0,0.18);
 }
 
 .tooltip-name {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     line-height: 1.2;
@@ -328,10 +328,44 @@ body {
 }
 
 .tooltip-desc {
-    font-size: 0.62rem;
-    color: rgba(200,210,230,0.7);
-    line-height: 1.35;
+    font-size: 0.65rem;
+    color: rgba(200,210,230,0.75);
+    line-height: 1.4;
     margin-top: 3px;
+}
+
+/* Properties section */
+.tooltip-props {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.tooltip-prop {
+    font-size: 0.62rem;
+    line-height: 1.3;
+}
+
+.prop-label {
+    color: rgba(160,180,210,0.6);
+}
+
+.prop-value {
+    color: rgba(220,230,250,0.9);
+    font-weight: 600;
+}
+
+/* Stack count in tooltip */
+.tooltip-stack {
+    font-size: 0.58rem;
+    color: rgba(160,180,210,0.5);
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    letter-spacing: 0.04em;
 }
 
 /* Drag states */
