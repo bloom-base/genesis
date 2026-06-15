@@ -197,14 +197,12 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    cursor: grab;
     transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
     flex-shrink: 0;
 }
 
-.inv-slot:empty,
-.inv-slot:not([draggable]) {
+.inv-slot:not(.occupied) {
     cursor: default;
 }
 
@@ -368,12 +366,75 @@ body {
     letter-spacing: 0.04em;
 }
 
+/* Cursor hints for occupied slots */
+.inv-slot.occupied {
+    cursor: grab;
+}
+
 /* Drag states */
-.inv-slot.dragging  { opacity: 0.4; cursor: grabbing; }
+.inv-slot.dragging  {
+    opacity: 0.35;
+    cursor: grabbing;
+    border-style: dashed;
+}
 .inv-slot.drag-over {
     background: rgba(120, 200, 255, 0.2);
     border-color: rgba(120, 200, 255, 0.8);
     box-shadow: 0 0 12px rgba(120, 200, 255, 0.5);
+    transform: scale(1.06);
+    transition: transform 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* ── Drag ghost (follows cursor during drag) ──────────────────────────────── */
+
+.drag-ghost {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-radius: 8px;
+    background: rgba(8, 12, 20, 0.92);
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65),
+                0 0 16px rgba(120, 200, 255, 0.15);
+    user-select: none;
+}
+
+.drag-ghost.visible {
+    opacity: 0.92;
+}
+
+/* Rarity borders on ghost */
+.drag-ghost.rarity-common    { border-color: rgba(157,157,157,0.6); }
+.drag-ghost.rarity-uncommon  { border-color: rgba(30,255,0,0.65); }
+.drag-ghost.rarity-rare      { border-color: rgba(0,112,221,0.8); box-shadow: 0 8px 24px rgba(0,0,0,0.65), 0 0 12px rgba(0,112,221,0.3); }
+.drag-ghost.rarity-epic      { border-color: rgba(163,53,238,0.85); box-shadow: 0 8px 24px rgba(0,0,0,0.65), 0 0 14px rgba(163,53,238,0.35); }
+.drag-ghost.rarity-legendary { border-color: rgba(255,128,0,0.9); box-shadow: 0 8px 24px rgba(0,0,0,0.65), 0 0 16px rgba(255,128,0,0.4); }
+
+.ghost-icon {
+    font-size: 1.55rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.ghost-count {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    line-height: 1;
 }
 
 /* Category filter dim */
@@ -714,5 +775,14 @@ body {
     #inventory-grid,
     #inv-panel-hotbar {
         gap: 3px;
+    }
+
+    .drag-ghost {
+        width: 36px;
+        height: 36px;
+    }
+
+    .ghost-icon {
+        font-size: 1.1rem;
     }
 }

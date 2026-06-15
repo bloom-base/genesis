@@ -51,6 +51,13 @@ export function createInventoryUI(invSystem) {
     /** @type {{ zone: 'inventory'|'hotbar', index: number } | null} */
     let dragState = null;
 
+    // ── Drag ghost element ───────────────────────────────────────────────────
+
+    const ghostEl = document.createElement('div');
+    ghostEl.className = 'drag-ghost';
+    ghostEl.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ghostEl);
+
     // ── Floating tooltip ────────────────────────────────────────────────────
 
     const tooltipEl = document.createElement('div');
@@ -137,44 +144,162 @@ export function createInventoryUI(invSystem) {
         tooltipItemId = null;
     }
 
-    // ── Drag helpers ──────────────────────────────────────────────────────────
+    // ── Custom mouse-based drag helpers ─────────────────────────────────────
 
-    function onDragStart(zone, index, e) {
+    /** Minimum px movement before a mousedown becomes a drag. */
+    const DRAG_THRESHOLD = 4;
+    /** Tracks whether we've passed the drag threshold and started dragging. */
+    let dragStarted = false;
+    /** mousedown origin for threshold check. */
+    let dragOrigin = { x: 0, y: 0 };
+    /** The DOM element of the slot being dragged. */
+    let dragSourceEl = null;
+
+    /**
+     * Position the ghost element centered on the cursor.
+     * @param {number} clientX
+     * @param {number} clientY
+     */
+    function positionGhost(clientX, clientY) {
+        ghostEl.style.left = `${clientX}px`;
+        ghostEl.style.top  = `${clientY}px`;
+    }
+
+    /**
+     * Show the drag ghost with the item's icon and rarity.
+     * @param {import('./items.js').ItemDef} def
+     * @param {number} count
+     * @param {number} clientX
+     * @param {number} clientY
+     */
+    function showGhost(def, count, clientX, clientY) {
+        const rc = RARITY_COLORS[def.rarity];
+        ghostEl.className = `drag-ghost visible rarity-${def.rarity}`;
+
+        let html = `<span class="ghost-icon">${def.icon}</span>`;
+        if (def.stackable && count > 1) {
+            html += `<span class="ghost-count">${count}</span>`;
+        }
+        ghostEl.innerHTML = html;
+
+        // Apply rarity background tint
+        if (rc) {
+            ghostEl.style.background =
+                `radial-gradient(ellipse at center, ${rc.hex}28 0%, ${rc.hex}10 60%, rgba(8,12,20,0.92) 100%)`;
+        } else {
+            ghostEl.style.background = 'rgba(8,12,20,0.92)';
+        }
+
+        positionGhost(clientX, clientY);
+    }
+
+    function hideGhost() {
+        ghostEl.classList.remove('visible');
+        ghostEl.innerHTML = '';
+    }
+
+    /**
+     * Find the .inv-slot element under the given cursor position,
+     * excluding the ghost itself.
+     * @param {number} clientX
+     * @param {number} clientY
+     * @returns {HTMLElement|null}
+     */
+    function getSlotAtPoint(clientX, clientY) {
+        // Temporarily hide ghost so elementFromPoint can see through it
+        ghostEl.style.pointerEvents = 'none';
+        const el = document.elementFromPoint(clientX, clientY);
+        if (!el) return null;
+        return el.closest('.inv-slot');
+    }
+
+    /** Clear all .drag-over highlights. */
+    function clearDragOverHighlights() {
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function onMouseDown(zone, index, e) {
+        // Only respond to primary button
+        if (e.button !== 0) return;
         const slot = zone === 'hotbar'
             ? invSystem.hotbar[index]
             : invSystem.inventory[index];
-        if (!slot) { e.preventDefault(); return; }
-        dragState = { zone, index };
-        e.dataTransfer.effectAllowed = 'move';
-        e.currentTarget.classList.add('dragging');
-        hideTooltip();
-    }
+        if (!slot) return;
 
-    function onDragOver(e) {
+        dragState  = { zone, index };
+        dragOrigin = { x: e.clientX, y: e.clientY };
+        dragStarted = false;
+        dragSourceEl = e.currentTarget;
+
+        // Prevent text selection while dragging
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        e.currentTarget.classList.add('drag-over');
     }
 
-    function onDragLeave(e) {
-        e.currentTarget.classList.remove('drag-over');
-    }
-
-    function onDrop(zone, index, e) {
-        e.preventDefault();
-        e.currentTarget.classList.remove('drag-over');
+    function onMouseMove(e) {
         if (!dragState) return;
-        if (dragState.zone === zone && dragState.index === index) return;
-        invSystem.moveItem(dragState.zone, dragState.index, zone, index);
-        playItemMoveSound();
-        dragState = null;
+
+        // Check drag threshold before starting visual drag
+        if (!dragStarted) {
+            const dx = e.clientX - dragOrigin.x;
+            const dy = e.clientY - dragOrigin.y;
+            if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+
+            // Threshold met — begin visual drag
+            dragStarted = true;
+            hideTooltip();
+
+            if (dragSourceEl) dragSourceEl.classList.add('dragging');
+
+            const slotData = dragState.zone === 'hotbar'
+                ? invSystem.hotbar[dragState.index]
+                : invSystem.inventory[dragState.index];
+            if (slotData) {
+                const def = getItem(slotData.itemId);
+                if (def) showGhost(def, slotData.count, e.clientX, e.clientY);
+            }
+        }
+
+        positionGhost(e.clientX, e.clientY);
+
+        // Highlight the slot under the cursor
+        clearDragOverHighlights();
+        const targetSlot = getSlotAtPoint(e.clientX, e.clientY);
+        if (targetSlot && targetSlot !== dragSourceEl) {
+            targetSlot.classList.add('drag-over');
+        }
     }
 
-    function onDragEnd(e) {
-        e.currentTarget.classList.remove('dragging');
-        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-        dragState = null;
+    function onMouseUp(e) {
+        if (!dragState) return;
+
+        if (dragStarted) {
+            // Find target slot under cursor
+            const targetSlot = getSlotAtPoint(e.clientX, e.clientY);
+            if (targetSlot) {
+                const dstZone  = /** @type {'inventory'|'hotbar'} */ (targetSlot.dataset.zone);
+                const dstIndex = parseInt(targetSlot.dataset.index, 10);
+
+                if (dstZone && !isNaN(dstIndex) &&
+                    !(dragState.zone === dstZone && dragState.index === dstIndex)) {
+                    invSystem.moveItem(dragState.zone, dragState.index, dstZone, dstIndex);
+                    playItemMoveSound();
+                }
+            }
+
+            // Clean up visual states
+            if (dragSourceEl) dragSourceEl.classList.remove('dragging');
+            clearDragOverHighlights();
+            hideGhost();
+        }
+
+        dragState    = null;
+        dragStarted  = false;
+        dragSourceEl = null;
     }
+
+    // Global listeners for mousemove / mouseup (only needed on document)
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup',   onMouseUp);
 
     // ── Slot hover handlers ─────────────────────────────────────────────────
 
@@ -227,7 +352,7 @@ export function createInventoryUI(invSystem) {
                 const rc = RARITY_COLORS[def.rarity];
 
                 el.classList.add(`rarity-${def.rarity}`);
-                el.draggable = true;
+                el.classList.add('occupied');
 
                 // Apply rarity background tint
                 if (rc) {
@@ -254,15 +379,13 @@ export function createInventoryUI(invSystem) {
                 el.addEventListener('mousemove',  onSlotMouseMove);
                 el.addEventListener('mouseleave', onSlotMouseLeave);
 
-                // Drag handlers
-                el.addEventListener('dragstart', (e) => onDragStart(zone, index, e));
-                el.addEventListener('dragend',   onDragEnd);
+                // Mouse-based drag handler
+                el.addEventListener('mousedown', (e) => onMouseDown(zone, index, e));
             }
         }
 
-        el.addEventListener('dragover',  onDragOver);
-        el.addEventListener('dragleave', onDragLeave);
-        el.addEventListener('drop',      (e) => onDrop(zone, index, e));
+        // Prevent native drag on all slots (we handle drag via mouse events)
+        el.addEventListener('dragstart', (e) => e.preventDefault());
 
         // 1–9 key hint badge (hotbar only)
         if (keyHint) {
