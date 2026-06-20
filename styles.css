@@ -134,11 +134,26 @@ body {
     user-select: none;
 }
 
+/* ── Minimap ───────────────────────────────────────────────────────────────── */
+
+#minimap-canvas {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.88;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
 /* ── Time-of-day clock ─────────────────────────────────────────────────────── */
 
 #time-display {
     position: absolute;
-    top: 16px;
+    top: 140px;
     right: 20px;
     font-size: 0.85rem;
     font-weight: 600;
