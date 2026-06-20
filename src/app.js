@@ -16,6 +16,7 @@ import { createSpellSystem } from './spells.js';
 import { createDayNightCycle } from './daynight.js';
 import { initAudio, updateFootsteps, playInventoryToggle, playSelectSound, playPickupSound } from './audio.js';
 import { createGroundItemSystem } from './groundItems.js';
+import { createMinimap } from './minimap.js';
 
 // ── Visitor counter ──────────────────────────────────────────────────────────
 (function initVisitCounter() {
@@ -176,6 +177,10 @@ const groundItems = createGroundItemSystem(scene, getHeight, seaLevel, invSystem
     playPickupSound,
     showPickupToast,
 });
+
+// ── Minimap ──────────────────────────────────────────────────────────────────
+const minimapCanvas = document.getElementById('minimap-canvas');
+const minimap = createMinimap(minimapCanvas, getHeight, seaLevel);
 
 let inventoryOpen = false; // true while the inventory panel is visible
 
@@ -388,6 +393,9 @@ let prevTime = performance.now();
 
     // Advance the day/night cycle — updates sky, lighting, fog, and HUD clock.
     dayNight.update(delta, camera);
+
+    // Update minimap — terrain radar + player position/direction
+    minimap.update(camera);
 
     // Gentle water shimmer — oscillate opacity to mimic light on water.
     waterMat.opacity = 0.72 + Math.sin(now * 0.0009) * 0.04;
